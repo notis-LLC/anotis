@@ -12,7 +12,8 @@ namespace Anotis.Models.BackgroundRefreshing
         private readonly IDatabase _database;
         private readonly ILogger<BackgroundNewUpdatesRefresher> _logger;
 
-        public BackgroundNewUpdatesRefresher(IConfiguration config, IDatabase database, ILogger<BackgroundNewUpdatesRefresher> logger) : base(logger, TimeSpan.FromMinutes(5))
+        public BackgroundNewUpdatesRefresher(IConfiguration config, IDatabase database,
+            ILogger<BackgroundNewUpdatesRefresher> logger) : base(logger, TimeSpan.FromMinutes(5))
         {
             _config = config;
             _database = database;

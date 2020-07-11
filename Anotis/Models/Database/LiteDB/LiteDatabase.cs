@@ -28,7 +28,7 @@ namespace Anotis.Models.Database.LiteDB
                 Token = token,
                 State = state
             };
-            
+
 
             col.EnsureIndex(it => it.ObjectId);
             return col.Insert(ins).AsInt64;

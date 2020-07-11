@@ -16,7 +16,6 @@ namespace Anotis
 {
     public class Startup
     {
-        
         public Startup(IConfiguration configuration)
         {
             Configuration = configuration;
@@ -34,17 +33,18 @@ namespace Anotis
                 //options.OutputFormatters.RemoveType<HttpNoContentOutputFormatter>();
                 //remove these two below, but added so you know where to place them...
             });
-            
+
             services.AddControllers();
             services.AddSwaggerGen(c =>
             {
                 c.SwaggerDoc("v1", new OpenApiInfo {Title = "Anotis api", Version = "v1"});
             });
-            services.AddSingleton(it => new ShikimoriClient((ILogger)it.GetService(typeof(ILogger<Startup>)), new ClientSettings(
-                Configuration["Shikimori:ClientName"], 
-                Configuration["Shikimori:ClientId"],
-                Configuration["Shikimori:ClientSecret"], 
-                Configuration["Shikimori:RedirectUrl"])));
+            services.AddSingleton(it => new ShikimoriClient((ILogger) it.GetService(typeof(ILogger<Startup>)),
+                new ClientSettings(
+                    Configuration["Shikimori:ClientName"],
+                    Configuration["Shikimori:ClientId"],
+                    Configuration["Shikimori:ClientSecret"],
+                    Configuration["Shikimori:RedirectUrl"])));
             services.AddSingleton<ShikimoriAttendance>();
             services.AddSingleton<IDatabase, Lite>();
             services.AddHostedService<BackgroundTokenRefresher>();
@@ -55,15 +55,9 @@ namespace Anotis
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
         {
             app.UseSwagger();
-            app.UseSwaggerUI(c =>
-            {
-                c.SwaggerEndpoint("/swagger/v1/swagger.json", "Anotis api");
-            });
-            
-            if (env.IsDevelopment())
-            {
-                app.UseDeveloperExceptionPage();
-            }
+            app.UseSwaggerUI(c => { c.SwaggerEndpoint("/swagger/v1/swagger.json", "Anotis api"); });
+
+            if (env.IsDevelopment()) app.UseDeveloperExceptionPage();
 
             app.UseHttpsRedirection();
 

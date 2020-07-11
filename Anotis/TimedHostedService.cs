@@ -8,7 +8,6 @@ namespace Anotis
 {
     public abstract class TimedHostedService : IHostedService, IDisposable
     {
-        public TimeSpan Period { get; }
         protected readonly ILogger Logger;
         private Timer _timer;
 
@@ -18,14 +17,19 @@ namespace Anotis
             Logger = logger;
         }
 
+        public TimeSpan Period { get; }
+
+        public void Dispose()
+        {
+            _timer?.Dispose();
+        }
+
         public Task StartAsync(CancellationToken cancellationToken)
         {
             Logger.LogInformation("Timed Background Service is starting.");
             _timer = new Timer(DoWork, null, TimeSpan.Zero, Period);
             return Task.CompletedTask;
         }
-
-        protected abstract void DoWork(object state);
 
         public Task StopAsync(CancellationToken cancellationToken)
         {
@@ -34,9 +38,6 @@ namespace Anotis
             return Task.CompletedTask;
         }
 
-        public void Dispose()
-        {
-            _timer?.Dispose();
-        }
+        protected abstract void DoWork(object state);
     }
 }

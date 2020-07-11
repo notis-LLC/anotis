@@ -13,7 +13,8 @@ namespace Anotis.Models.BackgroundRefreshing
         private readonly IDatabase _database;
         private readonly ILogger<BackgroundNewUserRefresher> _logger;
 
-        public BackgroundNewUserRefresher(ShikimoriAttendance attendance, IDatabase database, ILogger<BackgroundNewUserRefresher> logger) : base(logger, TimeSpan.FromMinutes(1))
+        public BackgroundNewUserRefresher(ShikimoriAttendance attendance, IDatabase database,
+            ILogger<BackgroundNewUserRefresher> logger) : base(logger, TimeSpan.FromMinutes(1))
         {
             _attendance = attendance;
             _database = database;
@@ -22,7 +23,7 @@ namespace Anotis.Models.BackgroundRefreshing
 
         protected override async void DoWork(object state)
         {
-            _logger.LogDebug($"New Users Update");
+            _logger.LogDebug("New Users Update");
             var res = _database.Find(it => it.Animes == null && it.Mangas == null);
             var aw = res.Select(async it =>
             {
