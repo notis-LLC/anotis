@@ -28,6 +28,7 @@ namespace Anotis.Models.BackgroundRefreshing
             {
                 entity.Token = await _shiki.RefreshOAuth(entity.Token);
                 _database.Update(entity);
+                _logger.LogInformation($"{entity.ObjectId}'s token has been updated");
             }
         }
     }

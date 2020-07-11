@@ -24,18 +24,17 @@ namespace Anotis.Models.BackgroundRefreshing
         protected override async void DoWork(object state)
         {
             _logger.LogDebug("New Users Update");
-            var res = _database.Find(it => it.Animes == null && it.Mangas == null);
-            var aw = res.Select(async it =>
+            var res = _database.Find(it => it.Animes == null && it.Mangas == null).ToList();
+            foreach (var entity in res)
             {
-                var result = new DatabaseEntity {State = it.State, Token = it.Token, ObjectId = it.ObjectId};
-                _logger.LogDebug($"Updating information about: {it.ObjectId}");
-                var rates = await _attendance.GetRates(it.Token);
-                result.Animes = rates.Where(iit => iit.TargetType == "Anime").Select(iit => iit.TargetId).ToList();
-                result.Mangas = rates.Where(iit => iit.TargetType == "Manga").Select(iit => iit.TargetId).ToList();
-                return result;
-            }).ToList();
-            await Task.WhenAll(aw);
-            _database.Update(aw.Select(it => it.Result));
+                entity.ShikimoriId = await _attendance.GetUserId(entity.Token);
+                entity.Animes = await _attendance.GetAnimeList(entity.Token);
+                entity.Mangas = await _attendance.GetMangaList(entity.Token);
+            }
+
+            _database.Update(res);
         }
+        
+        
     }
 }

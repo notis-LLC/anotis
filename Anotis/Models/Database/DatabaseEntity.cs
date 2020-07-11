@@ -6,6 +6,7 @@ namespace Anotis.Models.Database
     public class DatabaseEntity
     {
         public long ObjectId { get; set; }
+        public long ShikimoriId { get; set; }
         public AccessToken Token { get; set; }
         public List<long> Animes { get; set; }
         public List<long> Mangas { get; set; }

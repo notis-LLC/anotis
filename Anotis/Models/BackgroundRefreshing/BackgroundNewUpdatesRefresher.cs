@@ -23,7 +23,7 @@ namespace Anotis.Models.BackgroundRefreshing
         protected override async void DoWork(object state)
         {
             using var client = new HttpClient();
-            var res = await client.GetStringAsync(_config["Updates:Server"]);
+            var content = await client.GetStringAsync(_config["Updates:Server"]);
             throw new NotImplementedException();
         }
     }
