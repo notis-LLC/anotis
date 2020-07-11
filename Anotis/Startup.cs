@@ -1,16 +1,22 @@
-using Anotis.Models;
+using Anotis.Models.Attendance.Shikimori;
+using Anotis.Models.BackgroundRefreshing;
 using Anotis.Models.Database;
+using Anotis.Models.Database.LiteDB;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging;
 using Microsoft.OpenApi.Models;
+using ShikimoriSharp;
+using ShikimoriSharp.Bases;
 
 namespace Anotis
 {
     public class Startup
     {
+        
         public Startup(IConfiguration configuration)
         {
             Configuration = configuration;
@@ -34,8 +40,15 @@ namespace Anotis
             {
                 c.SwaggerDoc("v1", new OpenApiInfo {Title = "Anotis api", Version = "v1"});
             });
-            services.AddSingleton<IDatabase, LiteDb>();
-            services.AddHostedService<BackgroundRefresh>();
+            services.AddSingleton(it => new ShikimoriClient((ILogger)it.GetService(typeof(ILogger<Startup>)), new ClientSettings(
+                Configuration["Shikimori:ClientName"], 
+                Configuration["Shikimori:ClientId"],
+                Configuration["Shikimori:ClientSecret"], 
+                Configuration["Shikimori:RedirectUrl"])));
+            services.AddSingleton<ShikimoriAttendance>();
+            services.AddSingleton<IDatabase, Lite>();
+            services.AddHostedService<BackgroundTokenRefresher>();
+            services.AddHostedService<BackgroundNewUserRefresher>();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

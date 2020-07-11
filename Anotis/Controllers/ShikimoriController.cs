@@ -1,40 +1,41 @@
 ﻿using System.Threading.Tasks;
-using Anotis.Models;
+using Anotis.Models.Attendance.Shikimori;
 using Anotis.Models.Database;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 
 namespace Anotis.Controllers
 {
     [ApiController]
-    [Route("[controller]")]
-    public class ShikimoriController : ControllerBase
+    public class ShikimoriController : Controller
     {
+        private readonly ShikimoriAttendance _attendance;
+        private readonly IDatabase _database;
         private readonly ILogger<ShikimoriController> _logger;
-        private readonly IControllerService _service;
+        private readonly IConfiguration _configuration;
 
-        private const string ClientId = "nsLe5UGPbFIYLeC_q3Wbm65-wOgB6JOLN46Ukmt_RQM";
-        private const string RedirectUrl = "https://cc8b707e.ngrok.io/shikimori/auth";
-        public ShikimoriController(ILogger<ShikimoriController> logger, IControllerService service)
+        public ShikimoriController(ShikimoriAttendance attendance, IDatabase database, ILogger<ShikimoriController> logger, IConfiguration configuration)
         {
+            _attendance = attendance;
+            _database = database;
             _logger = logger;
-            _service = service;
-        }
-        // shikimori/GenerateAuthLink?code=code&state=214124
-        [HttpGet("generate")]
-        public string GenerateAuthLink(long id)
-        {
-            return
-                $@"https://shikimori.one/oauth/authorize?client_id={ClientId}&redirect_uri={RedirectUrl}&response_type=code&state={id}&scope=user_rates";
+            _configuration = configuration;
         }
         
-        [ProducesResponseType(204)]
-        [HttpGet("auth")]
-        // shikimori/auth?code=code&state=214124
-        public async Task<NoContentResult> Auth(string code, long state)
+        [HttpGet("[controller]/auth")]
+        public string Auth(long userId)
         {
-            await _service.NewUser(Sources.Shikimori, code, state);
-            return NoContent();
+            _logger.LogInformation($"New user appeared: {userId}");
+            return string.Format(_configuration["Shikimori:AuthLinkTemplate"], _configuration["Shikimori:RedirectUrl"], userId);
+        }
+
+        [HttpGet("[controller]/auth_redirect")]
+        public async Task AuthRedirect(string code, long state)
+        {
+            _logger.LogInformation($"Shikimori_redirect was called: {code}:{state}");
+            var token = await _attendance.OAuth(code);
+            _database.AddInitiator(token, state);
         }
     }
 }

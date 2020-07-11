@@ -1,14 +1,16 @@
 ﻿using System;
 using System.Collections.Generic;
-using ShikimoriSharp.Classes;
-using static ShikimoriSharp.Information.Mangas;
+using System.Linq.Expressions;
+using ShikimoriSharp.Bases;
 
 namespace Anotis.Models.Database
 {
-    public interface IDatabase : IDisposable
+    public interface IDatabase
     {
-        long InsertUser(User user);
-        long UpdateUser(long id, User user);
-        User GetById(long id);
+        long AddInitiator(AccessToken token, long state);
+        IEnumerable<DatabaseEntity> GetAll();
+        IEnumerable<DatabaseEntity> Find(Expression<Func<DatabaseEntity, bool>> predicate);
+        bool Update(DatabaseEntity entity);
+        int Update(IEnumerable<DatabaseEntity> entity);
     }
 }

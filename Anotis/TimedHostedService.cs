@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Threading;
 using System.Threading.Tasks;
-using Anotis.Models.Database;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 
@@ -9,20 +8,20 @@ namespace Anotis
 {
     public abstract class TimedHostedService : IHostedService, IDisposable
     {
-        protected readonly ILogger<TimedHostedService> Logger;
-        protected readonly IDatabase Database;
+        public TimeSpan Period { get; }
+        protected readonly ILogger Logger;
         private Timer _timer;
 
-        protected TimedHostedService(ILogger<TimedHostedService> logger, IDatabase database)
+        protected TimedHostedService(ILogger logger, TimeSpan period)
         {
+            Period = period;
             Logger = logger;
-            Database = database;
         }
 
         public Task StartAsync(CancellationToken cancellationToken)
         {
             Logger.LogInformation("Timed Background Service is starting.");
-            _timer = new Timer(DoWork, null, TimeSpan.Zero, TimeSpan.FromSeconds(5));
+            _timer = new Timer(DoWork, null, TimeSpan.Zero, Period);
             return Task.CompletedTask;
         }
 
@@ -38,7 +37,6 @@ namespace Anotis
         public void Dispose()
         {
             _timer?.Dispose();
-            Database?.Dispose();
         }
     }
 }

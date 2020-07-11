@@ -5,13 +5,8 @@
     </PropertyGroup>
 
     <ItemGroup>
-      <PackageReference Include="ShikimoriSharp" Version="1.1.2" />
+      <PackageReference Include="LiteDB" Version="5.0.8" />
+      <PackageReference Include="ShikimoriSharp" Version="1.2.1" />
       <PackageReference Include="Swashbuckle.AspNetCore" Version="5.4.1" />
     </ItemGroup>
-
-    <ItemGroup>
-      <ProjectReference Include="..\Anotis.Framework\Anotis.Framework.csproj" />
-    </ItemGroup>
-
-
 </Project>
