@@ -36,10 +36,11 @@ namespace Anotis.Models.BackgroundRefreshing
                 });
                 try
                 {
-                    var res = await url.GetJsonAsync<MangaUpdatedCluster>();
-                    entity.UpdatedAt = res.Mangas
-                        .First(it => it.Date == res.Mangas.Max(iit => iit.Date))
-                        .Date.UtcDateTime;
+                    //var res = await url.GetJsonAsync<MangaUpdatedCluster>();
+                    //entity.UpdatedAt = res.Mangas
+                    //    .First(it => it.Date == res.Mangas.Max(iit => iit.Date))
+                    //   .Date.UtcDateTime;
+                    throw new NotImplementedException();
                 }
                 catch (FlurlHttpException ex)
                 {
