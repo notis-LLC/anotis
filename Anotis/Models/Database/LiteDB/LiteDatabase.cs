@@ -16,14 +16,23 @@ namespace Anotis.Models.Database.LiteDB
         public Lite(ILogger<Lite> logger, IConfiguration config)
         {
             _db = new LiteDatabase(config["LiteDB:ConString"]);
-            BsonMapper.Global.Entity<DatabaseEntity>().Id(entity => entity.ObjectId);
+            BsonMapper.Global.Entity<DatabaseUser>().Id(entity => entity.ObjectId);
             _logger = logger;
         }
 
+        private BsonValue Update<T>(string name, T value)
+        {
+            var col = _db.GetCollection<T>(name);
+            var res = col.Update(value);
+            if (!res) return col.Insert(value);
+            
+            return true;
+        }
+        
         public long AddInitiator(AccessToken token, long state)
         {
-            var col = _db.GetCollection<DatabaseEntity>("users");
-            var ins = new DatabaseEntity
+            var col = _db.GetCollection<DatabaseUser>("users");
+            var ins = new DatabaseUser
             {
                 Token = token,
                 State = state
@@ -34,29 +43,52 @@ namespace Anotis.Models.Database.LiteDB
             return col.Insert(ins).AsInt64;
         }
 
-        public IEnumerable<DatabaseEntity> GetAll()
+        public IEnumerable<DatabaseUser> GetAllUsers()
         {
-            var col = _db.GetCollection<DatabaseEntity>("users");
+            var col = _db.GetCollection<DatabaseUser>("users");
             return col.FindAll();
         }
 
 
-        public IEnumerable<DatabaseEntity> Find(Expression<Func<DatabaseEntity, bool>> predicate)
+        public IEnumerable<DatabaseUser> Find(Expression<Func<DatabaseUser, bool>> predicate)
         {
-            var col = _db.GetCollection<DatabaseEntity>("users");
+            var col = _db.GetCollection<DatabaseUser>("users");
             return col.Find(predicate);
         }
 
-        public bool Update(DatabaseEntity entity)
+        public bool Update(DatabaseUser entity)
         {
-            var col = _db.GetCollection<DatabaseEntity>("users");
+            var col = _db.GetCollection<DatabaseUser>("users");
             return col.Update(entity);
         }
 
-        public int Update(IEnumerable<DatabaseEntity> entities)
+        public bool Update(DatabaseExternalLink links)
         {
-            var col = _db.GetCollection<DatabaseEntity>("users");
+            var col = _db.GetCollection<DatabaseExternalLink>("external_links");
+            return col.Upsert(links);
+        }
+
+        public int Update(IEnumerable<DatabaseExternalLink> entity)
+        {
+            var col = _db.GetCollection<DatabaseExternalLink>("external_links");
+            return col.Upsert(entity);        
+        }
+
+        public int Update(IEnumerable<DatabaseUser> entities)
+        {
+            var col = _db.GetCollection<DatabaseUser>("users");
             return col.Update(entities);
+        }
+
+        public int AddExternalLinks(IEnumerable<DatabaseExternalLink> links)
+        {
+            var col = _db.GetCollection<DatabaseExternalLink>("external_links");
+            return col.Upsert(links);
+        }
+
+        public IEnumerable<DatabaseExternalLink> GetAllLinks()
+        {
+            return _db.GetCollection<DatabaseExternalLink>("external_links").FindAll();
         }
     }
 }

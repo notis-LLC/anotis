@@ -1,9 +1,10 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using ShikimoriSharp.Bases;
 
 namespace Anotis.Models.Database
 {
-    public class DatabaseEntity
+    public class DatabaseUser
     {
         public long ObjectId { get; set; }
         public long ShikimoriId { get; set; }
@@ -11,5 +12,6 @@ namespace Anotis.Models.Database
         public List<long> Animes { get; set; }
         public List<long> Mangas { get; set; }
         public long State { get; set; }
+        public DateTime UpdatedAt { get; set; }
     }
 }

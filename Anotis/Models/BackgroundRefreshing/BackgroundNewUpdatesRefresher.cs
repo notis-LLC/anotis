@@ -1,8 +1,12 @@
 ﻿using System;
-using System.Net.Http;
+using System.Linq;
+using System.Threading.Tasks;
 using Anotis.Models.Database;
+using Flurl;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
+using Flurl.Http;
+
 
 namespace Anotis.Models.BackgroundRefreshing
 {
@@ -22,8 +26,27 @@ namespace Anotis.Models.BackgroundRefreshing
 
         protected override async void DoWork(object state)
         {
-            using var client = new HttpClient();
-            var content = await client.GetStringAsync(_config["Updates:Server"]);
+            _logger.LogInformation("Indexing updates");
+            var links = _database.GetAllLinks().ToList();
+            foreach (var entity in links)
+            {
+                var url = _config["Updater:Url"].AppendPathSegment("byUrl").SetQueryParams(new
+                {
+                    after = entity.UpdatedAt
+                });
+                try
+                {
+                    var res = await url.GetJsonAsync<MangaUpdatedCluster>();
+                    entity.UpdatedAt = res.Mangas
+                        .First(it => it.Date == res.Mangas.Max(iit => iit.Date))
+                        .Date.UtcDateTime;
+                }
+                catch (FlurlHttpException ex)
+                {
+                    continue;
+                }
+
+            }
             throw new NotImplementedException();
         }
     }

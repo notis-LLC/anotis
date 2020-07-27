@@ -25,11 +25,19 @@ namespace Anotis.Models.BackgroundRefreshing
         {
             _logger.LogDebug("New Users Update");
             var res = _database.Find(it => it.Animes == null && it.Mangas == null).ToList();
+            if (res.Count == 0)
+            {
+                _logger.LogInformation("Nothing found, returning");
+                return;
+            }
+            
+            var now = DateTime.UtcNow;
             foreach (var entity in res)
             {
                 entity.ShikimoriId = await _attendance.GetUserId(entity.Token);
                 entity.Animes = await _attendance.GetAnimeList(entity.Token);
                 entity.Mangas = await _attendance.GetMangaList(entity.Token);
+                entity.UpdatedAt = now;
             }
 
             _database.Update(res);

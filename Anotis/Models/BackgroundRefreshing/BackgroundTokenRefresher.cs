@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Linq;
 using Anotis.Models.Attendance.Shikimori;
 using Anotis.Models.Database;
 using Microsoft.Extensions.Logging;
@@ -23,7 +24,14 @@ namespace Anotis.Models.BackgroundRefreshing
         {
             _logger.LogDebug("Token refreshing");
             var currentTimestamp = DateTimeOffset.UtcNow.ToUnixTimeSeconds();
-            var entities = _database.Find(it => it.Token.CreatedAt + it.Token.ExpiresIn <= currentTimestamp);
+            var entities = _database.Find(it => it.Token.ExpiresIn != 0
+                                                &&
+                                                it.Token.CreatedAt + it.Token.ExpiresIn <= currentTimestamp).ToList();
+            if (entities.Count == 0)
+            {
+                _logger.LogInformation("Nothing found, returning");
+                return;
+            }
             foreach (var entity in entities)
             {
                 entity.Token = await _shiki.RefreshOAuth(entity.Token);

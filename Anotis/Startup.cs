@@ -9,6 +9,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.OpenApi.Models;
+using Prometheus;
 using ShikimoriSharp;
 using ShikimoriSharp.Bases;
 
@@ -49,6 +50,7 @@ namespace Anotis
             services.AddSingleton<IDatabase, Lite>();
             services.AddHostedService<BackgroundTokenRefresher>();
             services.AddHostedService<BackgroundNewUserRefresher>();
+            services.AddHostedService<BackgroundUserUpdatesRefresher>();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -62,10 +64,14 @@ namespace Anotis
             app.UseHttpsRedirection();
 
             app.UseRouting();
-
+            app.UseHttpMetrics();
             app.UseAuthorization();
 
-            app.UseEndpoints(endpoints => { endpoints.MapControllers(); });
+            app.UseEndpoints(endpoints => { 
+                endpoints.MapControllers();
+                endpoints.MapMetrics();
+            });
+            
         }
     }
 }

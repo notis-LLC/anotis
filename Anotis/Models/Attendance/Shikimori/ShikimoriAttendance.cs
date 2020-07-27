@@ -4,6 +4,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using ShikimoriSharp;
+using ShikimoriSharp.AdditionalRequests;
 using ShikimoriSharp.Bases;
 using ShikimoriSharp.Classes;
 using ShikimoriSharp.Enums;
@@ -22,6 +23,10 @@ namespace Anotis.Models.Attendance.Shikimori
             _client = client;
         }
 
+        public Task<ExternalLinks[]> GetLinks(TargetType type, long id)
+        {
+            return type == TargetType.Anime ? _client.Animes.GetExternalLinks(id) : _client.Mangas.GetExternalLinks(id);
+        }
         public async Task<AccessToken> OAuth(string authCode)
         {
             return await _client.Client.AuthorizationManager.GetAccessToken(authCode);
