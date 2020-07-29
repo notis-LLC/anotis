@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Anotis.Models.Attendance.Shikimori;
@@ -35,11 +36,26 @@ namespace Anotis.Models.BackgroundRefreshing
             var now = DateTime.UtcNow;
             foreach (var entity in res)
             {
-                entity.ShikimoriId = await _attendance.GetUserId(entity.Token);
-                entity.Animes = await _attendance.GetAnimeList(entity.Token);
-                entity.Mangas = await _attendance.GetMangaList(entity.Token);
+                Task[] arr = {
+                    _attendance.GetUserId(entity.Token), 
+                    _attendance.GetAnimeList(entity.Token),
+                    _attendance.GetMangaList(entity.Token)
+                };
+                await Task.WhenAll(arr);
+                try
+                {
+                    entity.ShikimoriId = ((Task<long>) arr[0]).Result;
+                    entity.Animes = ((Task<List<long>>) arr[1]).Result;
+                    entity.Mangas = ((Task<List<long>>) arr[2]).Result;
+                }
+                catch (Exception e)
+                {
+                    _logger.LogCritical(e.Message);
+                    throw;
+                }
+                
                 entity.UpdatedAt = now;
-                Task.WaitAll(
+                await Task.WhenAll(
                     _database.UpdateLinks(entity.Mangas, TargetType.Manga, _attendance.GetLinks),
                     _database.UpdateLinks(entity.Animes, TargetType.Anime, _attendance.GetLinks)
                 );

@@ -13,7 +13,7 @@ namespace Anotis.Controllers
         {
             _database = database;
         }
-        [HttpGet("[controller]/get_all")]
+        [HttpGet("[controller]/all")]
         public IEnumerable<DatabaseUser> GetAll()
         {
             return _database.GetAllUsers();

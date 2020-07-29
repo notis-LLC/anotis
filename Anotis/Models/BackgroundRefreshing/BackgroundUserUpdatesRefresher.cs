@@ -36,40 +36,22 @@ namespace Anotis.Models.BackgroundRefreshing
             var mangas = new HashSet<long>(); 
             var updated = DateTime.UtcNow;
 
-            foreach (var entity in all)
+            var updatedUsers = await Task.WhenAll(all.AsParallel().Select(async it =>
             {
-                entity.Animes = await _attendance.GetAnimeList(entity.Token);
-                animes.UnionWith(entity.Animes);
-                entity.Mangas = await _attendance.GetMangaList(entity.Token);
-                mangas.UnionWith(entity.Mangas);
-                entity.UpdatedAt = updated;
+                it.Animes = await _attendance.GetAnimeList(it.Token);
+                it.Mangas = await _attendance.GetMangaList(it.Token);
+                it.UpdatedAt = updated;
+                return it;
+            }));
+
+            foreach (var user in updatedUsers)
+            {
+                animes.UnionWith(user.Animes);
+                mangas.UnionWith(user.Mangas);
             }
-            
-            var allLinks = _database.GetAllLinks().ToList();
-            var newAnimeLinks = await Task.WhenAll(Helper(animes, allLinks.Where(it => it.Type == TargetType.Anime), TargetType.Anime));
-            var newMangaLinks =  await Task.WhenAll(Helper(mangas, allLinks.Where(it => it.Type == TargetType.Manga), TargetType.Manga));
 
-            void Insert(IEnumerable<ExternalLinks[]> links, TargetType type)
-            {
-                _database.Update(links.Select(it => new DatabaseExternalLink
-                {
-                    Links = it,
-                    Id = it.First().EntryId,
-                    Type = type,
-                    UpdatedAt = updated
-                }));
-            } 
-            Insert(newAnimeLinks, TargetType.Anime);
-            Insert(newMangaLinks, TargetType.Manga);
-            _database.Update(all);
-        }
-
-        private IEnumerable<Task<ExternalLinks[]>> Helper(IEnumerable<long> newLinks, IEnumerable<DatabaseExternalLink> source, TargetType type)
-        {
-            return newLinks
-                .AsParallel()
-                .Where(it => source.All(x => x.Id != it))
-                .Select(it => _attendance.GetLinks(type, it));
+            await Task.WhenAll(_database.UpdateLinks(animes, TargetType.Anime, _attendance.GetLinks),
+                _database.UpdateLinks(mangas, TargetType.Manga, _attendance.GetLinks));
         }
     }
 }

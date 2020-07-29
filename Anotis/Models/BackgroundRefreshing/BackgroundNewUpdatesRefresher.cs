@@ -6,6 +6,7 @@ using Flurl;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using Flurl.Http;
+using ShikimoriSharp.Enums;
 
 
 namespace Anotis.Models.BackgroundRefreshing
@@ -28,23 +29,29 @@ namespace Anotis.Models.BackgroundRefreshing
 
         protected override async void DoWork(object state)
         {
+            return;
+            var now = DateTime.UtcNow;
             _logger.LogInformation("Indexing updates");
-            var links = _database.GetAllLinks().ToList();
+            var links = _database.GetAllLinks().Where(it => it.Type == TargetType.Manga).ToList();
             foreach (var entity in links)
             {
-                return;
                 var url = _config["Updater:Url"].AppendPathSegment("byUrl").SetQueryParams(new
                 {
-                    after = entity.LastRelease
+                    after = entity.LastRelease,
                 });
                 try
                 {
                     _logger.LogInformation($"GET: {url}");
                     var res = await url.GetJsonAsync<MangaUpdatedCluster>();
                     _logger.LogInformation($"RESPONSE: {res.Total}");
-                    entity.LastRelease = res.Mangas.Max(it => it.Date).ToUniversalTime();
-                    _database.Update(entity);
-                    await _receiver.ReceiveCluster(res);
+                    entity.UpdatedAt = now;
+                    if (res.Mangas.Length != 0)
+                    {
+                        entity.LastRelease = res.Mangas[0].Date;
+                        _database.Update(entity);
+                        await _receiver.ReceiveCluster(res);
+                        
+                    } else _database.Update(entity);
                 }
                 catch (FlurlHttpException ex)
                 {
