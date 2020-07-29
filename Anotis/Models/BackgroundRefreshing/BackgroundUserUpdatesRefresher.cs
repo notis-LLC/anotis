@@ -54,7 +54,7 @@ namespace Anotis.Models.BackgroundRefreshing
                 _database.Update(links.Select(it => new DatabaseExternalLink
                 {
                     Links = it,
-                    ShikimoriId = it.First().EntryId,
+                    Id = it.First().EntryId,
                     Type = type,
                     UpdatedAt = updated
                 }));
@@ -68,7 +68,7 @@ namespace Anotis.Models.BackgroundRefreshing
         {
             return newLinks
                 .AsParallel()
-                .Where(it => source.All(x => x.ShikimoriId != it))
+                .Where(it => source.All(x => x.Id != it))
                 .Select(it => _attendance.GetLinks(type, it));
         }
     }

@@ -1,10 +1,14 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq.Expressions;
+using System.Threading.Tasks;
 using LiteDB;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
+using ShikimoriSharp.AdditionalRequests;
 using ShikimoriSharp.Bases;
+using ShikimoriSharp.Classes;
+using ShikimoriSharp.Enums;
 
 namespace Anotis.Models.Database.LiteDB
 {
@@ -20,15 +24,6 @@ namespace Anotis.Models.Database.LiteDB
             _logger = logger;
         }
 
-        private BsonValue Update<T>(string name, T value)
-        {
-            var col = _db.GetCollection<T>(name);
-            var res = col.Update(value);
-            if (!res) return col.Insert(value);
-            
-            return true;
-        }
-        
         public long AddInitiator(AccessToken token, long state)
         {
             var col = _db.GetCollection<DatabaseUser>("users");
@@ -65,6 +60,7 @@ namespace Anotis.Models.Database.LiteDB
         public bool Update(DatabaseExternalLink links)
         {
             var col = _db.GetCollection<DatabaseExternalLink>("external_links");
+            col.EnsureIndex(x => x.Id);
             return col.Upsert(links);
         }
 
@@ -83,7 +79,28 @@ namespace Anotis.Models.Database.LiteDB
         public int AddExternalLinks(IEnumerable<DatabaseExternalLink> links)
         {
             var col = _db.GetCollection<DatabaseExternalLink>("external_links");
+            col.EnsureIndex(x => x.Id);
             return col.Upsert(links);
+        }
+
+        public async Task UpdateLinks(IEnumerable<long> entities, TargetType type, Func<TargetType, long, Task<ExternalLinks[]>> updater)
+        {
+            var links = _db.GetCollection<DatabaseExternalLink>("external_links");
+            links.EnsureIndex(x => x.Id);
+            foreach (var entity in entities)
+            {
+                if (!links.Exists(link => link.Id == entity && link.Type == type))
+                {
+                    links.Upsert(new DatabaseExternalLink
+                    {
+                        LastRelease = DateTime.MinValue,
+                        Links = await updater(type, entity),
+                        Id = entity,
+                        Type = type,
+                        UpdatedAt = DateTime.MinValue
+                    });
+                }
+            }
         }
 
         public IEnumerable<DatabaseExternalLink> GetAllLinks()

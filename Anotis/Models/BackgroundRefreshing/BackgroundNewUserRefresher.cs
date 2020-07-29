@@ -4,6 +4,7 @@ using System.Threading.Tasks;
 using Anotis.Models.Attendance.Shikimori;
 using Anotis.Models.Database;
 using Microsoft.Extensions.Logging;
+using ShikimoriSharp.Enums;
 
 namespace Anotis.Models.BackgroundRefreshing
 {
@@ -38,8 +39,12 @@ namespace Anotis.Models.BackgroundRefreshing
                 entity.Animes = await _attendance.GetAnimeList(entity.Token);
                 entity.Mangas = await _attendance.GetMangaList(entity.Token);
                 entity.UpdatedAt = now;
+                Task.WaitAll(
+                    _database.UpdateLinks(entity.Mangas, TargetType.Manga, _attendance.GetLinks),
+                    _database.UpdateLinks(entity.Animes, TargetType.Anime, _attendance.GetLinks)
+                );
             }
-
+            
             _database.Update(res);
         }
         

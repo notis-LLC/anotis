@@ -24,7 +24,7 @@
         public string Name { get; set; }
 
         [JsonProperty("date")]
-        public DateTimeOffset Date { get; set; }
+        public DateTime Date { get; set; }
 
         [JsonProperty("href")]
         public Uri Href { get; set; }

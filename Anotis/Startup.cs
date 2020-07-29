@@ -1,3 +1,4 @@
+using Anotis.Models;
 using Anotis.Models.Attendance.Shikimori;
 using Anotis.Models.BackgroundRefreshing;
 using Anotis.Models.Database;
@@ -48,6 +49,8 @@ namespace Anotis
                     Configuration["Shikimori:RedirectUrl"])));
             services.AddSingleton<ShikimoriAttendance>();
             services.AddSingleton<IDatabase, Lite>();
+            services.AddSingleton<MangaReceiver>();
+            services.AddHostedService<BackgroundNewUpdatesRefresher>();
             services.AddHostedService<BackgroundTokenRefresher>();
             services.AddHostedService<BackgroundNewUserRefresher>();
             services.AddHostedService<BackgroundUserUpdatesRefresher>();
