@@ -11,10 +11,10 @@ namespace Anotis.Models.BackgroundRefreshing
 {
     public class BackgroundNewUserRefresher : TimedHostedService
     {
-        private readonly TokenRenewer _renewer;
         private readonly ShikimoriAttendance _attendance;
         private readonly IDatabase _database;
         private readonly ILogger<BackgroundNewUserRefresher> _logger;
+        private readonly TokenRenewer _renewer;
 
         public BackgroundNewUserRefresher(TokenRenewer renewer, ShikimoriAttendance attendance, IDatabase database,
             ILogger<BackgroundNewUserRefresher> logger) : base(logger, TimeSpan.FromMinutes(1))
@@ -34,13 +34,14 @@ namespace Anotis.Models.BackgroundRefreshing
                 _logger.LogInformation("Nothing found, returning");
                 return;
             }
-            
+
             var now = DateTime.UtcNow;
             foreach (var entity in res)
             {
                 entity.Token = await _renewer.EnsureToken(entity);
-                Task[] arr = {
-                    _attendance.GetUserId(entity.Token), 
+                Task[] arr =
+                {
+                    _attendance.GetUserId(entity.Token),
                     _attendance.GetAnimeList(entity.Token),
                     _attendance.GetMangaList(entity.Token)
                 };
@@ -56,17 +57,15 @@ namespace Anotis.Models.BackgroundRefreshing
                     _logger.LogCritical(e.Message);
                     throw;
                 }
-                
+
                 entity.UpdatedAt = now;
                 await Task.WhenAll(
                     _database.UpdateLinks(entity.Mangas, TargetType.Manga, _attendance.GetLinks),
                     _database.UpdateLinks(entity.Animes, TargetType.Anime, _attendance.GetLinks)
                 );
             }
-            
+
             _database.Update(res);
         }
-        
-        
     }
 }

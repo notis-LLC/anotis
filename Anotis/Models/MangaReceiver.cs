@@ -15,12 +15,11 @@ namespace Anotis.Models
             _database = database;
             _logger = logger;
         }
+
         public async Task ReceiveCluster(MangaUpdatedCluster cluster)
         {
             foreach (var cl in cluster.Mangas)
-            {
                 _logger.LogInformation($"{cl.Date}: {cl.Name} | {cl.Tome} {cl.Number} {cl.Href}");
-            }
 
             await Task.Delay(200);
         }

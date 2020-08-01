@@ -3,20 +3,19 @@ using System.Linq;
 using System.Threading.Tasks;
 using Anotis.Models.Database;
 using Flurl;
+using Flurl.Http;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
-using Flurl.Http;
 using ShikimoriSharp.Enums;
-
 
 namespace Anotis.Models.BackgroundRefreshing
 {
     public class BackgroundNewUpdatesRefresher : TimedHostedService
     {
-        private readonly MangaReceiver _receiver;
         private readonly IConfiguration _config;
         private readonly IDatabase _database;
         private readonly ILogger<BackgroundNewUpdatesRefresher> _logger;
+        private readonly MangaReceiver _receiver;
 
         public BackgroundNewUpdatesRefresher(MangaReceiver receiver, IConfiguration config, IDatabase database,
             ILogger<BackgroundNewUpdatesRefresher> logger) : base(logger, TimeSpan.FromMinutes(5))
@@ -42,14 +41,11 @@ namespace Anotis.Models.BackgroundRefreshing
                 }
 
                 res.Url = url.ToString();
-                
+
                 _logger.LogInformation($"RESPONSE: {res.Mangas.Length}");
                 entity.UpdatedAt = now;
-                if (res.Mangas.Length != 0)
-                {
-                    link.LastUpdate = res.Mangas[0].Date;
-                } 
-                    
+                if (res.Mangas.Length != 0) link.LastUpdate = res.Mangas[0].Date;
+
                 _database.Update(entity);
                 return res;
             }
@@ -59,17 +55,18 @@ namespace Anotis.Models.BackgroundRefreshing
                 return null;
             }
         }
-        
+
         protected override async void DoWork(object state)
         {
             _logger.LogInformation("Indexing updates");
             var links = _database.GetAllLinks().Where(it => it.Type == TargetType.Manga).ToList();
             foreach (var entity in links)
             {
-                var urles = entity.Links.Select(it => (it, _config["Manser:Url"].AppendPathSegment("byUrl").AppendPathSegment(it.Link.Url).SetQueryParams(new
-                {
-                    after = it.LastUpdate,
-                }))).Select(it => Request(entity, it.it, it.Item2));
+                var urles = entity.Links.Select(it => (it, _config["Manser:Url"].AppendPathSegment("byUrl")
+                    .AppendPathSegment(it.Link.Url).SetQueryParams(new
+                    {
+                        after = it.LastUpdate
+                    }))).Select(it => Request(entity, it.it, it.Item2));
                 var result = (await Task.WhenAll(urles)).Where(it => !(it is null)).ToList();
                 entity.UpdatedAt = DateTime.UtcNow;
             }

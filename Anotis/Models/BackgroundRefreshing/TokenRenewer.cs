@@ -1,6 +1,4 @@
 ﻿using System;
-using System.Linq;
-using System.Threading;
 using System.Threading.Tasks;
 using Anotis.Models.Attendance.Shikimori;
 using Anotis.Models.Database;
@@ -27,7 +25,7 @@ namespace Anotis.Models.BackgroundRefreshing
             _logger.LogDebug($"Token request for {user.ShikimoriId}");
             var currentTimestamp = DateTimeOffset.UtcNow.AddMinutes(5).ToUnixTimeSeconds();
             if (user.Token.CreatedAt + user.Token.ExpiresIn > currentTimestamp) return user.Token;
-            
+
             _logger.LogInformation($"Token updating: {user.ShikimoriId}");
             try
             {

@@ -8,7 +8,6 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using ShikimoriSharp.AdditionalRequests;
 using ShikimoriSharp.Bases;
-using ShikimoriSharp.Classes;
 using ShikimoriSharp.Enums;
 
 namespace Anotis.Models.Database.LiteDB
@@ -74,7 +73,7 @@ namespace Anotis.Models.Database.LiteDB
         public int Update(IEnumerable<DatabaseExternalLink> entity)
         {
             var col = _db.GetCollection<DatabaseExternalLink>("external_links");
-            return col.Upsert(entity);        
+            return col.Upsert(entity);
         }
 
         public int Update(IEnumerable<DatabaseUser> entities)
@@ -90,23 +89,21 @@ namespace Anotis.Models.Database.LiteDB
             return col.Upsert(links);
         }
 
-        public async Task UpdateLinks(IEnumerable<long> entities, TargetType type, Func<TargetType, long, Task<ExternalLinks[]>> updater)
+        public async Task UpdateLinks(IEnumerable<long> entities, TargetType type,
+            Func<TargetType, long, Task<ExternalLinks[]>> updater)
         {
             var links = _db.GetCollection<DatabaseExternalLink>("external_links");
             links.EnsureIndex(x => x.Id);
             foreach (var entity in entities)
-            {
                 if (!links.Exists(link => link.Id == entity && link.Type == type))
-                {
                     links.Upsert(new DatabaseExternalLink
                     {
-                        Links = (await updater(type, entity)).Select(it => new ExtendedLink(it, DateTime.MinValue)).ToArray(),
+                        Links = (await updater(type, entity)).Select(it => new ExtendedLink(it, DateTime.MinValue))
+                            .ToArray(),
                         Id = entity,
                         Type = type,
                         UpdatedAt = DateTime.MinValue
                     });
-                }
-            }
         }
 
         public IEnumerable<DatabaseExternalLink> GetAllLinks()

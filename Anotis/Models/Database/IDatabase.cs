@@ -4,7 +4,6 @@ using System.Linq.Expressions;
 using System.Threading.Tasks;
 using ShikimoriSharp.AdditionalRequests;
 using ShikimoriSharp.Bases;
-using ShikimoriSharp.Classes;
 using ShikimoriSharp.Enums;
 
 namespace Anotis.Models.Database
@@ -21,6 +20,7 @@ namespace Anotis.Models.Database
         int Update(IEnumerable<DatabaseExternalLink> entity);
         int Update(IEnumerable<DatabaseUser> entity);
         int AddExternalLinks(IEnumerable<DatabaseExternalLink> links);
+
         Task UpdateLinks(IEnumerable<long> entities, TargetType type,
             Func<TargetType, long, Task<ExternalLinks[]>> updater);
     }

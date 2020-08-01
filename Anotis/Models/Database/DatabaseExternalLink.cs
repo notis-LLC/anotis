@@ -1,5 +1,4 @@
 ﻿using System;
-using ShikimoriSharp.AdditionalRequests;
 using ShikimoriSharp.Enums;
 
 namespace Anotis.Models.Database

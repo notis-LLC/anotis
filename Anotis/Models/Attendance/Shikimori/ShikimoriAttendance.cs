@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
@@ -27,6 +26,7 @@ namespace Anotis.Models.Attendance.Shikimori
         {
             return type == TargetType.Anime ? _client.Animes.GetExternalLinks(id) : _client.Mangas.GetExternalLinks(id);
         }
+
         public async Task<AccessToken> OAuth(string authCode)
         {
             return await _client.Client.AuthorizationManager.GetAccessToken(authCode);
@@ -41,7 +41,7 @@ namespace Anotis.Models.Attendance.Shikimori
         public async Task<List<long>> GetAnimeList(AccessToken token)
         {
             var animes = new List<Anime>();
-            for (var i = 1; ; i++)
+            for (var i = 1;; i++)
             {
                 var page = await _client.Animes.GetAnime(new AnimeRequestSettings
                 {
@@ -51,15 +51,16 @@ namespace Anotis.Models.Attendance.Shikimori
                     mylist = MyList.watching
                 }, token);
                 animes.AddRange(page);
-                if(page.Length < 50) break;
+                if (page.Length < 50) break;
             }
 
             return animes.Select(it => it.Id).ToList();
         }
+
         public async Task<List<long>> GetMangaList(AccessToken token)
         {
             var mangas = new List<Manga>();
-            for (var i = 1; ; i++)
+            for (var i = 1;; i++)
             {
                 var page = await _client.Mangas.GetBySearch(new MangaRequestSettings
                 {
@@ -69,7 +70,7 @@ namespace Anotis.Models.Attendance.Shikimori
                     mylist = MyList.watching
                 }, token);
                 mangas.AddRange(page);
-                if(page.Length < 50) break;
+                if (page.Length < 50) break;
             }
 
             return mangas.Select(it => it.Id).ToList();
