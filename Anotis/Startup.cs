@@ -1,3 +1,4 @@
+using Anotis.Models;
 using Anotis.Models.Attendance.Shikimori;
 using Anotis.Models.BackgroundRefreshing;
 using Anotis.Models.Database;
@@ -9,6 +10,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.OpenApi.Models;
+using Prometheus;
 using ShikimoriSharp;
 using ShikimoriSharp.Bases;
 
@@ -47,25 +49,36 @@ namespace Anotis
                     Configuration["Shikimori:RedirectUrl"])));
             services.AddSingleton<ShikimoriAttendance>();
             services.AddSingleton<IDatabase, Lite>();
-            services.AddHostedService<BackgroundTokenRefresher>();
+            services.AddSingleton<MangaReceiver>();
+            services.AddSingleton<TokenRenewer>();
+            services.AddHostedService<BackgroundNewUpdatesRefresher>();
             services.AddHostedService<BackgroundNewUserRefresher>();
+            services.AddHostedService<BackgroundUserUpdatesRefresher>();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
-        public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
+        public void Configure(IApplicationBuilder app, IWebHostEnvironment env, ILoggerFactory loggerFactory)
         {
-            app.UseSwagger();
-            app.UseSwaggerUI(c => { c.SwaggerEndpoint("/swagger/v1/swagger.json", "Anotis api"); });
+            loggerFactory.AddFile("logs/log.txt");
 
-            if (env.IsDevelopment()) app.UseDeveloperExceptionPage();
+            if (env.IsDevelopment())
+            {
+                app.UseSwagger();
+                app.UseSwaggerUI(c => { c.SwaggerEndpoint("/swagger/v1/swagger.json", "Anotis api"); });
+                app.UseDeveloperExceptionPage();
+            }
 
             app.UseHttpsRedirection();
 
             app.UseRouting();
-
+            app.UseHttpMetrics();
             app.UseAuthorization();
 
-            app.UseEndpoints(endpoints => { endpoints.MapControllers(); });
+            app.UseEndpoints(endpoints =>
+            {
+                endpoints.MapControllers();
+                endpoints.MapMetrics();
+            });
         }
     }
 }

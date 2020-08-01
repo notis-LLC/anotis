@@ -1,13 +1,17 @@
-﻿using System.Threading.Tasks;
+﻿using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using ShikimoriSharp;
+using ShikimoriSharp.AdditionalRequests;
 using ShikimoriSharp.Bases;
 using ShikimoriSharp.Classes;
+using ShikimoriSharp.Enums;
 using ShikimoriSharp.Settings;
 
 namespace Anotis.Models.Attendance.Shikimori
 {
-    public class ShikimoriAttendance : IAttendance
+    public class ShikimoriAttendance
     {
         private readonly ShikimoriClient _client;
         private readonly ILogger<ShikimoriAttendance> _logger;
@@ -16,6 +20,11 @@ namespace Anotis.Models.Attendance.Shikimori
         {
             _logger = logger;
             _client = client;
+        }
+
+        public Task<ExternalLinks[]> GetLinks(TargetType type, long id)
+        {
+            return type == TargetType.Anime ? _client.Animes.GetExternalLinks(id) : _client.Mangas.GetExternalLinks(id);
         }
 
         public async Task<AccessToken> OAuth(string authCode)
@@ -29,12 +38,47 @@ namespace Anotis.Models.Attendance.Shikimori
             return await _client.Client.AuthorizationManager.RefreshAccessToken(token);
         }
 
-        public async Task<UserRate[]> GetRates(AccessToken token)
+        public async Task<List<long>> GetAnimeList(AccessToken token)
         {
-            return await _client.UserRates.GetUsersRates(new UserRatesSettings
+            var animes = new List<Anime>();
+            for (var i = 1;; i++)
             {
-                user_id = (await _client.Users.WhoAmI(token)).Id
-            });
+                var page = await _client.Animes.GetAnime(new AnimeRequestSettings
+                {
+                    limit = 50,
+                    page = i,
+                    status = "ongoing",
+                    mylist = MyList.watching
+                }, token);
+                animes.AddRange(page);
+                if (page.Length < 50) break;
+            }
+
+            return animes.Select(it => it.Id).ToList();
+        }
+
+        public async Task<List<long>> GetMangaList(AccessToken token)
+        {
+            var mangas = new List<Manga>();
+            for (var i = 1;; i++)
+            {
+                var page = await _client.Mangas.GetBySearch(new MangaRequestSettings
+                {
+                    limit = 50,
+                    page = i,
+                    status = "ongoing",
+                    mylist = MyList.watching
+                }, token);
+                mangas.AddRange(page);
+                if (page.Length < 50) break;
+            }
+
+            return mangas.Select(it => it.Id).ToList();
+        }
+
+        public async Task<long> GetUserId(AccessToken token)
+        {
+            return (await _client.Users.WhoAmI(token)).Id;
         }
     }
 }

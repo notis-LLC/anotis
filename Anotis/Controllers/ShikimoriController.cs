@@ -33,11 +33,12 @@ namespace Anotis.Controllers
         }
 
         [HttpGet("[controller]/auth_redirect")]
-        public async Task AuthRedirect(string code, long state)
+        public async Task<string> AuthRedirect(string code, long state)
         {
             _logger.LogInformation($"Shikimori_redirect was called: {code}:{state}");
             var token = await _attendance.OAuth(code);
             _database.AddInitiator(token, state);
+            return "Everything is fine :)";
         }
     }
 }

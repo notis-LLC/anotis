@@ -10,6 +10,9 @@
 
 .idea
 
+logs
+appsettings.*
+
 # User-specific files
 *.rsuser
 *.suo
