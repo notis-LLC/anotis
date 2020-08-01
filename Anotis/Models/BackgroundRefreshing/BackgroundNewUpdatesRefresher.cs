@@ -31,27 +31,26 @@ namespace Anotis.Models.BackgroundRefreshing
             var now = DateTime.UtcNow;
             try
             {
-                _logger.LogInformation($"REQUEST FOR {entity.Id}");
-                _logger.LogInformation($"GET: {url}");
+                _logger.LogInformation($"GET {entity.Id} | {url}");
                 var res = await url.GetJsonAsync<MangaUpdatedCluster>();
                 if (res is null)
                 {
-                    _logger.LogInformation("RESPONSE: null");
+                    _logger.LogInformation($"RESPONSE {entity.Id} | {url} : null");
                     return null;
                 }
 
                 res.Url = url.ToString();
 
-                _logger.LogInformation($"RESPONSE: {res.Mangas.Length}");
+                _logger.LogInformation($"RESPONSE {entity.Id} | {url} : {res.Mangas.Length}");
                 entity.UpdatedAt = now;
-                if (res.Mangas.Length != 0) link.LastUpdate = res.Mangas[0].Date;
+                if (res.Mangas.Length != 0) link.LastUpdate = res.Mangas[0].Date.ToUniversalTime();
 
                 _database.Update(entity);
                 return res;
             }
             catch (FlurlHttpException ex)
             {
-                _logger.LogCritical($"{url} | {ex.Message}");
+                _logger.LogCritical($"{ex.Message}");
                 return null;
             }
         }
@@ -60,16 +59,21 @@ namespace Anotis.Models.BackgroundRefreshing
         {
             _logger.LogInformation("Indexing updates");
             var links = _database.GetAllLinks().Where(it => it.Type == TargetType.Manga).ToList();
-            foreach (var entity in links)
+            var updates = await Task.WhenAll(links.AsParallel().Select(async entity =>
             {
-                var urles = entity.Links.Select(it => (it, _config["Manser:Url"].AppendPathSegment("byUrl")
-                    .AppendPathSegment(it.Link.Url).SetQueryParams(new
-                    {
-                        after = it.LastUpdate
-                    }))).Select(it => Request(entity, it.it, it.Item2));
-                var result = (await Task.WhenAll(urles)).Where(it => !(it is null)).ToList();
-                //TODO: do something with the result
-            }
+                return (await Task.WhenAll(entity.Links.AsParallel()
+                        .Select(it => (it, _config["Manser:Url"]
+                            .AppendPathSegment("byUrl")
+                            .AppendPathSegment(it.Link.Url)
+                            .SetQueryParams(new
+                            {
+                                after = it.LastUpdate
+                            })))
+                        .Select(it => Request(entity, it.it, it.Item2))
+                    ))
+                    .Where(it => !(it is null))
+                    .ToList();
+            }));
         }
     }
 }
