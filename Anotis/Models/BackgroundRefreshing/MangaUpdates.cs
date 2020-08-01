@@ -1,10 +1,13 @@
-﻿namespace Anotis.Models.BackgroundRefreshing
+﻿using Flurl;
+
+namespace Anotis.Models.BackgroundRefreshing
 {
     using System;
     using Newtonsoft.Json;
 
     public class MangaUpdatedCluster
     {
+        public string Url { get; set; }
         [JsonProperty("mangas")]
         public UpdatedManga[] Mangas { get; set; }
 

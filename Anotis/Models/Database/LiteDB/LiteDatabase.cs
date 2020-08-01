@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Linq.Expressions;
 using System.Threading.Tasks;
 using LiteDB;
@@ -99,8 +100,7 @@ namespace Anotis.Models.Database.LiteDB
                 {
                     links.Upsert(new DatabaseExternalLink
                     {
-                        LastRelease = DateTime.MinValue,
-                        Links = await updater(type, entity),
+                        Links = (await updater(type, entity)).Select(it => new ExtendedLink(it, DateTime.MinValue)).ToArray(),
                         Id = entity,
                         Type = type,
                         UpdatedAt = DateTime.MinValue
