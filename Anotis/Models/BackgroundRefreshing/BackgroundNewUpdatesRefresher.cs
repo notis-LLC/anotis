@@ -31,8 +31,7 @@ namespace Anotis.Models.BackgroundRefreshing
             var now = DateTime.UtcNow;
             try
             {
-                _logger.LogInformation($"REQUEST FOR {entity.Id}");
-                _logger.LogInformation($"GET: {url}");
+                _logger.LogInformation($"GET {entity.Id} | {url}");
                 var res = await url.GetJsonAsync<MangaUpdatedCluster>();
                 if (res is null)
                 {
@@ -42,7 +41,7 @@ namespace Anotis.Models.BackgroundRefreshing
 
                 res.Url = url.ToString();
 
-                _logger.LogInformation($"RESPONSE: {res.Mangas.Length}");
+                _logger.LogInformation($"RESPONSE {entity.Id} | {url}: {res.Mangas.Length}");
                 entity.UpdatedAt = now;
                 if (res.Mangas.Length != 0) link.LastUpdate = res.Mangas[0].Date;
 
