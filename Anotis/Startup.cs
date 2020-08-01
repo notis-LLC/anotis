@@ -50,15 +50,16 @@ namespace Anotis
             services.AddSingleton<ShikimoriAttendance>();
             services.AddSingleton<IDatabase, Lite>();
             services.AddSingleton<MangaReceiver>();
+            services.AddSingleton<TokenRenewer>();
             services.AddHostedService<BackgroundNewUpdatesRefresher>();
-            services.AddHostedService<BackgroundTokenRefresher>();
             services.AddHostedService<BackgroundNewUserRefresher>();
             services.AddHostedService<BackgroundUserUpdatesRefresher>();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
-        public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
+        public void Configure(IApplicationBuilder app, IWebHostEnvironment env, ILoggerFactory loggerFactory)
         {
+            loggerFactory.AddFile($"logs/log.txt");
             app.UseSwagger();
             app.UseSwaggerUI(c => { c.SwaggerEndpoint("/swagger/v1/swagger.json", "Anotis api"); });
 

@@ -11,13 +11,15 @@ namespace Anotis.Models.BackgroundRefreshing
 {
     public class BackgroundNewUserRefresher : TimedHostedService
     {
+        private readonly TokenRenewer _renewer;
         private readonly ShikimoriAttendance _attendance;
         private readonly IDatabase _database;
         private readonly ILogger<BackgroundNewUserRefresher> _logger;
 
-        public BackgroundNewUserRefresher(ShikimoriAttendance attendance, IDatabase database,
+        public BackgroundNewUserRefresher(TokenRenewer renewer, ShikimoriAttendance attendance, IDatabase database,
             ILogger<BackgroundNewUserRefresher> logger) : base(logger, TimeSpan.FromMinutes(1))
         {
+            _renewer = renewer;
             _attendance = attendance;
             _database = database;
             _logger = logger;
@@ -36,6 +38,7 @@ namespace Anotis.Models.BackgroundRefreshing
             var now = DateTime.UtcNow;
             foreach (var entity in res)
             {
+                entity.Token = await _renewer.EnsureToken(entity);
                 Task[] arr = {
                     _attendance.GetUserId(entity.Token), 
                     _attendance.GetAnimeList(entity.Token),

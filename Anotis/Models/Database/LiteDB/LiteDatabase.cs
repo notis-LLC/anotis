@@ -57,6 +57,12 @@ namespace Anotis.Models.Database.LiteDB
             return col.Update(entity);
         }
 
+        public bool Delete(DatabaseUser entity)
+        {
+            var col = _db.GetCollection<DatabaseUser>("users");
+            return col.Delete(entity.ObjectId);
+        }
+
         public bool Update(DatabaseExternalLink links)
         {
             var col = _db.GetCollection<DatabaseExternalLink>("external_links");

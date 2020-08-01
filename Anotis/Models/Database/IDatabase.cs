@@ -16,6 +16,7 @@ namespace Anotis.Models.Database
         IEnumerable<DatabaseExternalLink> GetAllLinks();
         IEnumerable<DatabaseUser> Find(Expression<Func<DatabaseUser, bool>> predicate);
         bool Update(DatabaseUser entity);
+        bool Delete(DatabaseUser entity);
         bool Update(DatabaseExternalLink entity);
         int Update(IEnumerable<DatabaseExternalLink> entity);
         int Update(IEnumerable<DatabaseUser> entity);

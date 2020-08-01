@@ -29,33 +29,33 @@ namespace Anotis.Models.BackgroundRefreshing
 
         protected override async void DoWork(object state)
         {
-            return;
             var now = DateTime.UtcNow;
             _logger.LogInformation("Indexing updates");
             var links = _database.GetAllLinks().Where(it => it.Type == TargetType.Manga).ToList();
             foreach (var entity in links)
             {
-                var url = _config["Updater:Url"].AppendPathSegment("byUrl").SetQueryParams(new
+                var url = _config["Manser:Url"].AppendPathSegment("byUrl").SetQueryParams(new
                 {
                     after = entity.LastRelease,
                 });
                 try
                 {
+                    _logger.LogInformation($"REQUEST FOR {entity.Id}");
                     _logger.LogInformation($"GET: {url}");
                     var res = await url.GetJsonAsync<MangaUpdatedCluster>();
-                    _logger.LogInformation($"RESPONSE: {res.Total}");
+                    _logger.LogInformation($"RESPONSE: {res.Mangas.Length}");
                     entity.UpdatedAt = now;
                     if (res.Mangas.Length != 0)
                     {
                         entity.LastRelease = res.Mangas[0].Date;
-                        _database.Update(entity);
                         await _receiver.ReceiveCluster(res);
-                        
-                    } else _database.Update(entity);
+                    } 
+                    
+                    _database.Update(entity);
                 }
                 catch (FlurlHttpException ex)
                 {
-                    _logger.LogError(ex.Message);
+                    _logger.LogCritical(ex.Message);
                 }
             }
         }

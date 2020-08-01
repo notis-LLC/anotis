@@ -12,12 +12,14 @@ namespace Anotis.Models.BackgroundRefreshing
 {
     public class BackgroundUserUpdatesRefresher : TimedHostedService
     {
+        private readonly TokenRenewer _renewer;
         private readonly IDatabase _database;
         private readonly ShikimoriAttendance _attendance;
         private readonly ILogger<BackgroundUserUpdatesRefresher> _logger;
 
-        public BackgroundUserUpdatesRefresher(IDatabase database, ShikimoriAttendance attendance, ILogger<BackgroundUserUpdatesRefresher> logger) : base(logger, TimeSpan.FromHours(2))
+        public BackgroundUserUpdatesRefresher(TokenRenewer renewer, IDatabase database, ShikimoriAttendance attendance, ILogger<BackgroundUserUpdatesRefresher> logger) : base(logger, TimeSpan.FromHours(2))
         {
+            _renewer = renewer;
             _database = database;
             _attendance = attendance;
             _logger = logger;
@@ -38,6 +40,7 @@ namespace Anotis.Models.BackgroundRefreshing
 
             var updatedUsers = await Task.WhenAll(all.AsParallel().Select(async it =>
             {
+                it.Token =  await _renewer.EnsureToken(it);
                 it.Animes = await _attendance.GetAnimeList(it.Token);
                 it.Mangas = await _attendance.GetMangaList(it.Token);
                 it.UpdatedAt = updated;
