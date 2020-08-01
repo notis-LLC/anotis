@@ -68,7 +68,7 @@ namespace Anotis.Models.BackgroundRefreshing
                         after = it.LastUpdate
                     }))).Select(it => Request(entity, it.it, it.Item2));
                 var result = (await Task.WhenAll(urles)).Where(it => !(it is null)).ToList();
-                entity.UpdatedAt = DateTime.UtcNow;
+                //TODO: do something with the result
             }
         }
     }
