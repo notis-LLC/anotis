@@ -38,8 +38,6 @@ namespace Anotis.Models.BackgroundRefreshing
                 //TODO: What should we do when token's update failed
                 //ATM: whatever, we just deleting it 
                 _logger.LogCritical($"{e.Message}{Environment.NewLine}{e.StackTrace}");
-                _database.Delete(user);
-                throw;
             }
 
             _database.Update(user);
