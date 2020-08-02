@@ -50,12 +50,15 @@ namespace Anotis.Models.BackgroundRefreshing
 
             foreach (var user in updatedUsers)
             {
+                _database.Update(user);
                 animes.UnionWith(user.Animes);
                 mangas.UnionWith(user.Mangas);
             }
 
-            await Task.WhenAll(_database.UpdateLinks(animes, TargetType.Anime, _attendance.GetLinks),
-                _database.UpdateLinks(mangas, TargetType.Manga, _attendance.GetLinks));
+            await Task.WhenAll(
+                _database.UpdateLinks(animes, TargetType.Anime, _attendance.GetLinks),
+                _database.UpdateLinks(mangas, TargetType.Manga, _attendance.GetLinks)
+                );
         }
     }
 }

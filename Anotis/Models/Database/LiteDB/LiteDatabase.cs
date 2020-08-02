@@ -98,7 +98,8 @@ namespace Anotis.Models.Database.LiteDB
                 if (!links.Exists(link => link.Id == entity && link.Type == type))
                     links.Upsert(new DatabaseExternalLink
                     {
-                        Links = (await updater(type, entity)).Select(it => new ExtendedLink(it, DateTime.MinValue))
+                        Links = (await updater(type, entity))
+                            .Select(it => new ExtendedLink(it, 2))
                             .ToArray(),
                         Id = entity,
                         Type = type,

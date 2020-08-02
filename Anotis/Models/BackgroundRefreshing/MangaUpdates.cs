@@ -5,6 +5,7 @@ namespace Anotis.Models.BackgroundRefreshing
 {
     public class MangaUpdatedCluster
     {
+        public long Id { get; set; }
         public string Url { get; set; }
 
         [JsonProperty("mangas")] public UpdatedManga[] Mangas { get; set; }
@@ -20,7 +21,7 @@ namespace Anotis.Models.BackgroundRefreshing
 
         [JsonProperty("name")] public string Name { get; set; }
 
-        [JsonProperty("date")] public DateTime Date { get; set; }
+        [JsonProperty("date")] public long Date { get; set; }
 
         [JsonProperty("href")] public Uri Href { get; set; }
     }

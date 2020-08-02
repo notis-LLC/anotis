@@ -27,7 +27,7 @@ namespace Anotis.Models.BackgroundRefreshing
 
         protected override async void DoWork(object state)
         {
-            _logger.LogDebug("New Users Update");
+            _logger.LogInformation("New Users Update");
             var res = _database.Find(it => it.Animes == null && it.Mangas == null).ToList();
             if (res.Count == 0)
             {

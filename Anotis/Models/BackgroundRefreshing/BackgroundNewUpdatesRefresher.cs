@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Anotis.Models.Database;
@@ -26,54 +27,62 @@ namespace Anotis.Models.BackgroundRefreshing
             _logger = logger;
         }
 
-        private async Task<MangaUpdatedCluster> Request(DatabaseExternalLink entity, ExtendedLink link, Url url)
+        private async Task<MangaUpdatedCluster> Request(Url url)
+        { 
+            _logger.LogInformation($"GET {url}");
+            var res = await url.GetJsonAsync<MangaUpdatedCluster>();
+            if (res is null) return null;
+            
+            res.Url = url.ToString();
+            _logger.LogInformation($"RESPONSE {url} : {res.Mangas.Length}");
+            return res;
+        }
+
+        private async Task<IEnumerable<(ExtendedLink link, MangaUpdatedCluster cluster)>> GetClustersForDel(DatabaseExternalLink mangaLinks)
         {
-            var now = DateTime.UtcNow;
+            var x = mangaLinks.Links.AsParallel()
+                .Select(it => (it, _config["Manser:Url"]
+                    .AppendPathSegment("byUrl")
+                    .AppendPathSegment(it.Link.Url)
+                    .SetQueryParam("after", it.LastUpdate)));
+            
+            var y = x.Select(it => (it.it, Request(it.Item2))).ToList();
+            await Task.WhenAll(y.Select(it => it.Item2));
+            return y.Select(it => (it.it, it.Item2.Result));
+        }
+        
+        private async Task<IEnumerable<MangaUpdatedCluster>> Request(DatabaseExternalLink mangaLinks)
+        {
             try
             {
-                _logger.LogInformation($"GET {entity.Id} | {url}");
-                var res = await url.GetJsonAsync<MangaUpdatedCluster>();
-                if (res is null)
+                var result = (await GetClustersForDel(mangaLinks))
+                    .Where(it => !(it.Item2 is null))
+                    .ToList();
+                for (var i = 0; i < result.Count; i++)
                 {
-                    _logger.LogInformation($"RESPONSE {entity.Id} | {url} : null");
-                    return null;
+                    result[i].cluster.Id = mangaLinks.Id;
+                    if (result[i].cluster.Mangas.Any())
+                        result[i].link.LastUpdate = result[i].cluster.Mangas.First().Date + 2;
                 }
-
-                res.Url = url.ToString();
-
-                _logger.LogInformation($"RESPONSE {entity.Id} | {url} : {res.Mangas.Length}");
-                entity.UpdatedAt = now;
-                if (res.Mangas.Length != 0) link.LastUpdate = res.Mangas[0].Date.ToUniversalTime();
-
-                _database.Update(entity);
-                return res;
+                
+                mangaLinks.UpdatedAt = DateTime.UtcNow;
+                _database.Update(mangaLinks);
+                return result.Select(it => it.Item2);
             }
+            
             catch (FlurlHttpException ex)
             {
                 _logger.LogCritical($"{ex.Message}");
                 return null;
             }
         }
-
+        
         protected override async void DoWork(object state)
         {
             _logger.LogInformation("Indexing updates");
             var links = _database.GetAllLinks().Where(it => it.Type == TargetType.Manga).ToList();
-            var updates = await Task.WhenAll(links.AsParallel().Select(async entity =>
-            {
-                return (await Task.WhenAll(entity.Links.AsParallel()
-                        .Select(it => (it, _config["Manser:Url"]
-                            .AppendPathSegment("byUrl")
-                            .AppendPathSegment(it.Link.Url)
-                            .SetQueryParams(new
-                            {
-                                after = it.LastUpdate
-                            })))
-                        .Select(it => Request(entity, it.it, it.Item2))
-                    ))
-                    .Where(it => !(it is null))
-                    .ToList();
-            }));
+            var updates = await Task.WhenAll(links.AsParallel().Select(Request));
+            await _receiver.ReceiveClusters(updates);
         }
     }
 }

@@ -10,7 +10,7 @@ namespace Anotis.Models
         {
         }
 
-        public ExtendedLink(ExternalLinks link, DateTime lastUpdate)
+        public ExtendedLink(ExternalLinks link, long lastUpdate)
         {
             Link = link;
             LastUpdate = lastUpdate;
@@ -18,6 +18,6 @@ namespace Anotis.Models
 
         [JsonProperty("links")] public ExternalLinks Link { get; set; }
 
-        [JsonProperty("last_update")] public DateTime LastUpdate { get; set; }
+        [JsonProperty("last_update")] public long LastUpdate { get; set; }
     }
 }
