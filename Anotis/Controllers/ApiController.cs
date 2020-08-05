@@ -6,9 +6,22 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
+using Newtonsoft.Json;
 
 namespace Anotis.Controllers
 {
+    public class Text
+    {
+        [JsonProperty("text")]
+        public string text { get; set; }
+    }
+
+    public class Telegram
+    {
+        [JsonProperty("telegram_id")]
+        public long TelegramId { get; set; }
+    }
+
     [ApiController]
     public class ApiController : Controller
     {
@@ -26,9 +39,9 @@ namespace Anotis.Controllers
         [HttpPost("[controller]/v1/me")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
-        public IActionResult GetMe([FromBody] long id)
+        public IActionResult GetMe([FromBody] Telegram id)
         {
-            var users = _database.Find(i => i.State == id).ToList();
+            var users = _database.Find(i => i.State == id.TelegramId).ToList();
             var user = users.FirstOrDefault();
             
             if (users.Count > 1) _logger.LogWarning($"Two entries of {id}");
@@ -46,13 +59,13 @@ namespace Anotis.Controllers
                 mangas[i - 1] = mangas[i - 1].Insert(0, $"{i}) ");
             }
             
-            return Ok($"Telegram id: {user.State}\nShikimori id: {user.ShikimoriId}\nShikimori nickname: {user.ShikimoriNickname}\nLast Update: {user.UpdatedAt}\n" + string.Join(Environment.NewLine, mangas));
+            return Ok(new Text {text = $"Telegram id: {user.State}\nShikimori id: {user.ShikimoriId}\nShikimori nickname: {user.ShikimoriNickname}\nLast Update: {user.UpdatedAt}\n" + string.Join(Environment.NewLine, mangas)});
         }
         
         [HttpPost("[controller]/v1/start")]
-        public string PostStart([FromBody] long id)
+        public Text PostStart([FromBody] Telegram id)
         {
-            return new UrlResolver(_config).UrlString(id);
+            return new Text {text = new UrlResolver(_config).UrlString(id.TelegramId)};
         }
 
         private string FormUrls(long id)
