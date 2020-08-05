@@ -8,6 +8,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using ShikimoriSharp.AdditionalRequests;
 using ShikimoriSharp.Bases;
+using ShikimoriSharp.Classes;
 using ShikimoriSharp.Enums;
 
 namespace Anotis.Models.Database.LiteDB
@@ -45,16 +46,40 @@ namespace Anotis.Models.Database.LiteDB
         }
 
 
+        public IEnumerable<MangaID> GetAllMangas()
+        {
+            var col = _db.GetCollection<MangaID>("mangas");
+            return col.FindAll();
+        }
+
         public IEnumerable<DatabaseUser> Find(Expression<Func<DatabaseUser, bool>> predicate)
         {
             var col = _db.GetCollection<DatabaseUser>("users");
             return col.Find(predicate);
         }
 
+        public IEnumerable<MangaID> Find(Expression<Func<MangaID, bool>> predicate)
+        {
+            var col = _db.GetCollection<MangaID>("mangas");
+            return col.Find(predicate);
+        }
+
+        public IEnumerable<DatabaseExternalLink> FindLinks(Expression<Func<DatabaseExternalLink, bool>> predicate)
+        {
+            var col = _db.GetCollection<DatabaseExternalLink>("external_links");
+            return col.Find(predicate);
+        }
+
+        public int CountLinks(Expression<Func<DatabaseExternalLink, bool>> predicate)
+        {
+            var col = _db.GetCollection<DatabaseExternalLink>("external_links");
+            return col.FindOne(predicate).Links.Length;
+        }
+
         public bool Update(DatabaseUser entity)
         {
             var col = _db.GetCollection<DatabaseUser>("users");
-            return col.Update(entity);
+            return col.Upsert(entity);
         }
 
         public bool Delete(DatabaseUser entity)
@@ -98,12 +123,22 @@ namespace Anotis.Models.Database.LiteDB
                 if (!links.Exists(link => link.Id == entity && link.Type == type))
                     links.Upsert(new DatabaseExternalLink
                     {
-                        Links = (await updater(type, entity)).Select(it => new ExtendedLink(it, DateTime.MinValue))
+                        Links = (await updater(type, entity))
+                            .Select(it => new ExtendedLink(it, DateTimeOffset.UtcNow.ToUnixTimeSeconds()))
                             .ToArray(),
                         Id = entity,
                         Type = type,
                         UpdatedAt = DateTime.MinValue
                     });
+        }
+
+        public async Task UpdateMangaInformation(IEnumerable<long> entities, Func<long, Task<MangaID>> updater)
+        {
+            var col = _db.GetCollection<MangaID>("mangas");
+            var tasks = entities.AsParallel()
+                .Where(x => !col.Exists(v => v.Id == x))
+                .Select(async it => col.Insert(await updater(it)));
+            await Task.WhenAll(tasks);
         }
 
         public IEnumerable<DatabaseExternalLink> GetAllLinks()
