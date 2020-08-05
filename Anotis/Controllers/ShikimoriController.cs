@@ -1,4 +1,5 @@
 ﻿using System.Threading.Tasks;
+using Anotis.Models.Attendance;
 using Anotis.Models.Attendance.Shikimori;
 using Anotis.Models.Database;
 using Microsoft.AspNetCore.Mvc;
@@ -10,16 +11,13 @@ namespace Anotis.Controllers
     [ApiController]
     public class ShikimoriController : Controller
     {
-        private readonly ShikimoriAttendance _attendance;
         private readonly IConfiguration _configuration;
-        private readonly IDatabase _database;
+        private readonly UserReceiver _receiver;
         private readonly ILogger<ShikimoriController> _logger;
 
-        public ShikimoriController(ShikimoriAttendance attendance, IDatabase database,
-            ILogger<ShikimoriController> logger, IConfiguration configuration)
+        public ShikimoriController(UserReceiver receiver, ILogger<ShikimoriController> logger, IConfiguration configuration)
         {
-            _attendance = attendance;
-            _database = database;
+            _receiver = receiver;
             _logger = logger;
             _configuration = configuration;
         }
@@ -28,16 +26,14 @@ namespace Anotis.Controllers
         public string Auth(long userId)
         {
             _logger.LogInformation($"New user appeared: {userId}");
-            return string.Format(_configuration["Shikimori:AuthLinkTemplate"], _configuration["Shikimori:RedirectUrl"],
-                userId);
+            return new UrlResolver(_configuration).UrlString(userId);
         }
 
         [HttpGet("[controller]/auth_redirect")]
         public async Task<string> AuthRedirect(string code, long state)
         {
             _logger.LogInformation($"Shikimori_redirect was called: {code}:{state}");
-            var token = await _attendance.OAuth(code);
-            _database.AddInitiator(token, state);
+            await _receiver.InitiateUser(code, state);
             return "Everything is fine :)";
         }
     }

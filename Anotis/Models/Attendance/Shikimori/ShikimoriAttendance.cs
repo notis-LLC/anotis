@@ -22,6 +22,11 @@ namespace Anotis.Models.Attendance.Shikimori
             _client = client;
         }
 
+        public Task<MangaID> GetMangaInformation(long id)
+        {
+            return _client.Mangas.GetById(id);
+        }
+        
         public Task<ExternalLinks[]> GetLinks(TargetType type, long id)
         {
             return type == TargetType.Anime ? _client.Animes.GetExternalLinks(id) : _client.Mangas.GetExternalLinks(id);
@@ -38,47 +43,30 @@ namespace Anotis.Models.Attendance.Shikimori
             return await _client.Client.AuthorizationManager.RefreshAccessToken(token);
         }
 
-        public async Task<List<long>> GetAnimeList(AccessToken token)
+        private async Task<List<long>> getShit(long id, TargetType type)
         {
-            var animes = new List<Anime>();
-            for (var i = 1;; i++)
+            var res = await _client.UserRates.GetUsersRates(new UserRatesSettings
             {
-                var page = await _client.Animes.GetAnime(new AnimeRequestSettings
-                {
-                    limit = 50,
-                    page = i,
-                    status = "ongoing",
-                    mylist = MyList.watching
-                }, token);
-                animes.AddRange(page);
-                if (page.Length < 50) break;
-            }
-
-            return animes.Select(it => it.Id).ToList();
+                status = MyList.watching,
+                target_type = type,
+                user_id = id
+            });
+            return res.Select(it => it.TargetId).ToList();
+        }
+        
+        public Task<List<long>> GetAnimeList(long id)
+        {
+            return getShit(id, TargetType.Anime);
         }
 
-        public async Task<List<long>> GetMangaList(AccessToken token)
+        public Task<List<long>> GetMangaList(long id)
         {
-            var mangas = new List<Manga>();
-            for (var i = 1;; i++)
-            {
-                var page = await _client.Mangas.GetBySearch(new MangaRequestSettings
-                {
-                    limit = 50,
-                    page = i,
-                    status = "ongoing",
-                    mylist = MyList.watching
-                }, token);
-                mangas.AddRange(page);
-                if (page.Length < 50) break;
-            }
-
-            return mangas.Select(it => it.Id).ToList();
+            return getShit(id, TargetType.Manga);
         }
 
-        public async Task<long> GetUserId(AccessToken token)
+        public  Task<UserInfo> GetUserId(AccessToken token)
         {
-            return (await _client.Users.WhoAmI(token)).Id;
+             return _client.Users.WhoAmI(token);
         }
     }
 }

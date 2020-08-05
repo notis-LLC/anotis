@@ -1,4 +1,5 @@
 using Anotis.Models;
+using Anotis.Models.Attendance;
 using Anotis.Models.Attendance.Shikimori;
 using Anotis.Models.BackgroundRefreshing;
 using Anotis.Models.Database;
@@ -51,8 +52,8 @@ namespace Anotis
             services.AddSingleton<IDatabase, Lite>();
             services.AddSingleton<MangaReceiver>();
             services.AddSingleton<TokenRenewer>();
+            services.AddSingleton<UserReceiver>();
             services.AddHostedService<BackgroundNewUpdatesRefresher>();
-            services.AddHostedService<BackgroundNewUserRefresher>();
             services.AddHostedService<BackgroundUserUpdatesRefresher>();
         }
 
