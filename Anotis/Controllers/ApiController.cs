@@ -23,7 +23,7 @@ namespace Anotis.Controllers
             _database = database;
         }
         
-        [HttpPost("[controller]/me")]
+        [HttpPost("[controller]/v1/me")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         public IActionResult GetMe([FromBody] long id)
@@ -49,7 +49,7 @@ namespace Anotis.Controllers
             return Ok($"Telegram id: {user.State}\nShikimori id: {user.ShikimoriId}\nShikimori nickname: {user.ShikimoriNickname}\nLast Update: {user.UpdatedAt}\n" + string.Join(Environment.NewLine, mangas));
         }
         
-        [HttpPost("[controller]/start")]
+        [HttpPost("[controller]/v1/start")]
         public string PostStart([FromBody] long id)
         {
             return new UrlResolver(_config).UrlString(id);
