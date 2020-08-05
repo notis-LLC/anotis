@@ -124,7 +124,7 @@ namespace Anotis.Models.Database.LiteDB
                     links.Upsert(new DatabaseExternalLink
                     {
                         Links = (await updater(type, entity))
-                            .Select(it => new ExtendedLink(it, 2))
+                            .Select(it => new ExtendedLink(it, DateTimeOffset.UtcNow.ToUnixTimeSeconds()))
                             .ToArray(),
                         Id = entity,
                         Type = type,

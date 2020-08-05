@@ -62,10 +62,11 @@ namespace Anotis
         {
             loggerFactory.AddFile("logs/log.txt");
 
+            app.UseSwagger();
+            app.UseSwaggerUI(c => { c.SwaggerEndpoint("/swagger/v1/swagger.json", "Anotis api"); });
+
             if (env.IsDevelopment())
             {
-                app.UseSwagger();
-                app.UseSwaggerUI(c => { c.SwaggerEndpoint("/swagger/v1/swagger.json", "Anotis api"); });
                 app.UseDeveloperExceptionPage();
             }
 
