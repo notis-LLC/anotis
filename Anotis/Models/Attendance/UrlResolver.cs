@@ -4,14 +4,16 @@ namespace Anotis.Models.Attendance
 {
     public class UrlResolver
     {
-        private readonly IConfiguration _config;
+        private readonly AnotisConfig _config;
 
-        public UrlResolver(IConfiguration config)
+        public UrlResolver(AnotisConfig config)
         {
             _config = config;
         }
 
         public string UrlString(long userId)
-            => string.Format(_config["Shikimori:AuthLinkTemplate"], _config["Shikimori:RedirectUrl"], userId);
+        {
+            return string.Format(_config.Shikimori.AuthLinkTemplate, _config.Shikimori.RedirectUrl, userId);
+        }
     }
 }

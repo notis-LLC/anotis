@@ -1,7 +1,6 @@
 ﻿using System.Threading.Tasks;
+using Anotis.Models;
 using Anotis.Models.Attendance;
-using Anotis.Models.Attendance.Shikimori;
-using Anotis.Models.Database;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
@@ -11,12 +10,15 @@ namespace Anotis.Controllers
     [ApiController]
     public class ShikimoriController : Controller
     {
-        private readonly IConfiguration _configuration;
-        private readonly UserReceiver _receiver;
+        private readonly AnotisConfig _configuration;
         private readonly ILogger<ShikimoriController> _logger;
+        private readonly TanserWorker _worker;
+        private readonly UserReceiver _receiver;
 
-        public ShikimoriController(UserReceiver receiver, ILogger<ShikimoriController> logger, IConfiguration configuration)
+        public ShikimoriController(TanserWorker worker, UserReceiver receiver, ILogger<ShikimoriController> logger,
+            AnotisConfig configuration)
         {
+            _worker = worker;
             _receiver = receiver;
             _logger = logger;
             _configuration = configuration;
@@ -30,11 +32,12 @@ namespace Anotis.Controllers
         }
 
         [HttpGet("[controller]/auth_redirect")]
-        public async Task<string> AuthRedirect(string code, long state)
+        public async Task<RedirectResult> AuthRedirect(string code, long state)
         {
             _logger.LogInformation($"Shikimori_redirect was called: {code}:{state}");
             await _receiver.InitiateUser(code, state);
-            return "Everything is fine :)";
+            await _worker.SendOk(state);
+            return Redirect(_configuration.Services.Tanser.Link);
         }
     }
 }
