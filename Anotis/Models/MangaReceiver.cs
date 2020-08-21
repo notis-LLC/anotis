@@ -36,7 +36,7 @@ namespace Anotis.Models
 
         private async Task ReceiveCluster(IEnumerable<DatabaseUser> collection, MangaUpdatedCluster cluster)
         {
-            var dest = _config["Manser:Send"];
+            var dest = _config["Tasner:Send"];
             var users = collection.Where(it => it.Mangas.Contains(cluster.Id)).ToList();
             if (users.Count == 0)
             {
