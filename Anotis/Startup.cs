@@ -43,21 +43,28 @@ namespace Anotis
             {
                 c.SwaggerDoc("v1", new OpenApiInfo {Title = "Anotis api", Version = "v1"});
             });
-            services.AddSingleton(it => new ShikimoriClient((ILogger) it.GetService(typeof(ILogger<Startup>)),
-                new ClientSettings(
-                    Configuration["Shikimori:ClientName"],
-                    Configuration["Shikimori:ClientId"],
-                    Configuration["Shikimori:ClientSecret"],
-                    Configuration["Shikimori:RedirectUrl"])));
             services.Configure<AnotisConfig>(Configuration.GetSection("AnotisConfig"));
             services.AddSingleton(sp => sp.GetRequiredService<IOptions<AnotisConfig>>().Value);
+            services.AddSingleton(it => 
+                new ShikimoriClient((ILogger) it.GetService(typeof(ILogger<Startup>)),
+                GetSettings(it.GetRequiredService<AnotisConfig>()))
+            );
             services.AddSingleton<ShikimoriAttendance>();
             services.AddSingleton<IDatabase, Lite>();
             services.AddSingleton<MangaReceiver>();
             services.AddSingleton<TokenRenewer>();
             services.AddSingleton<UserReceiver>();
-            //services.AddHostedService<BackgroundNewUpdatesRefresher>();
-            //services.AddHostedService<BackgroundUserUpdatesRefresher>();
+            services.AddHostedService<BackgroundNewUpdatesRefresher>();
+            services.AddHostedService<BackgroundUserUpdatesRefresher>();
+        }
+
+        private static ClientSettings GetSettings(AnotisConfig config)
+        {
+            return new ClientSettings(config.Shikimori.ClientName, 
+                config.Shikimori.ClientId,
+                config.Shikimori.ClientSecret, 
+                config.Shikimori.RedirectUrl
+                );
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
