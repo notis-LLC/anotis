@@ -25,11 +25,11 @@ namespace Anotis.Controllers
     [ApiController]
     public class ApiController : Controller
     {
-        private readonly IConfiguration _config;
+        private AnotisConfig _config;
         private readonly ILogger<ApiController> _logger;
         private readonly IDatabase _database;
 
-        public ApiController(IConfiguration config, ILogger<ApiController> logger, IDatabase database)
+        public ApiController(AnotisConfig config, ILogger<ApiController> logger, IDatabase database)
         {
             _config = config;
             _logger = logger;

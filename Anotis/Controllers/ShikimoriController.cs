@@ -9,12 +9,12 @@ namespace Anotis.Controllers
     [ApiController]
     public class ShikimoriController : Controller
     {
-        private readonly IConfiguration _configuration;
+        private readonly AnotisConfig _configuration;
         private readonly ILogger<ShikimoriController> _logger;
         private readonly UserReceiver _receiver;
 
         public ShikimoriController(UserReceiver receiver, ILogger<ShikimoriController> logger,
-            IConfiguration configuration)
+            AnotisConfig configuration)
         {
             _receiver = receiver;
             _logger = logger;

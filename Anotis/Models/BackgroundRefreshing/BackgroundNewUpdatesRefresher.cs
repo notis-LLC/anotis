@@ -13,12 +13,12 @@ namespace Anotis.Models.BackgroundRefreshing
 {
     public class BackgroundNewUpdatesRefresher : TimedHostedService
     {
-        private readonly IConfiguration _config;
+        private readonly AnotisConfig _config;
         private readonly IDatabase _database;
         private readonly ILogger<BackgroundNewUpdatesRefresher> _logger;
         private readonly MangaReceiver _receiver;
 
-        public BackgroundNewUpdatesRefresher(MangaReceiver receiver, IConfiguration config, IDatabase database,
+        public BackgroundNewUpdatesRefresher(MangaReceiver receiver, AnotisConfig config, IDatabase database,
             ILogger<BackgroundNewUpdatesRefresher> logger) : base(logger, TimeSpan.FromMinutes(5))
         {
             _receiver = receiver;
@@ -42,7 +42,7 @@ namespace Anotis.Models.BackgroundRefreshing
             DatabaseExternalLink mangaLinks)
         {
             var x = mangaLinks.Links.AsParallel()
-                .Select(it => (it, _config["Manser:Url"]
+                .Select(it => (it, _config.Services.Manser
                     .AppendPathSegment("byUrl")
                     .AppendPathSegment(it.Link.Url)
                     .SetQueryParam("after", it.LastUpdate)));

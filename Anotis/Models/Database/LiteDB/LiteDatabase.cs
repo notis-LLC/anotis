@@ -18,9 +18,9 @@ namespace Anotis.Models.Database.LiteDB
         private readonly LiteDatabase _db;
         private readonly ILogger<Lite> _logger;
 
-        public Lite(ILogger<Lite> logger, IConfiguration config)
+        public Lite(ILogger<Lite> logger, AnotisConfig config)
         {
-            _db = new LiteDatabase(config["LiteDB:ConString"]);
+            _db = new LiteDatabase(config.LiteDb.ConnectionString);
             BsonMapper.Global.Entity<DatabaseUser>().Id(entity => entity.ObjectId);
             _logger = logger;
         }

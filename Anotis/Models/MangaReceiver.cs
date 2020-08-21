@@ -16,11 +16,11 @@ namespace Anotis.Models
 {
     public class MangaReceiver
     {
-        private readonly IConfiguration _config;
+        private readonly AnotisConfig _config;
         private readonly IDatabase _database;
         private readonly ILogger<MangaReceiver> _logger;
 
-        public MangaReceiver(IConfiguration config, IDatabase database, ILogger<MangaReceiver> logger)
+        public MangaReceiver(AnotisConfig config, IDatabase database, ILogger<MangaReceiver> logger)
         {
             _config = config;
             _database = database;
@@ -36,7 +36,7 @@ namespace Anotis.Models
 
         private async Task ReceiveCluster(IEnumerable<DatabaseUser> collection, MangaUpdatedCluster cluster)
         {
-            var dest = _config["Tasner:Send"];
+            var dest = _config.Services.Tanser;
             var users = collection.Where(it => it.Mangas.Contains(cluster.Id)).ToList();
             if (users.Count == 0)
             {

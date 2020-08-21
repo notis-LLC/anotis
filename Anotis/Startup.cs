@@ -10,6 +10,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using Microsoft.OpenApi.Models;
 using Prometheus;
 using ShikimoriSharp;
@@ -48,13 +49,15 @@ namespace Anotis
                     Configuration["Shikimori:ClientId"],
                     Configuration["Shikimori:ClientSecret"],
                     Configuration["Shikimori:RedirectUrl"])));
+            services.Configure<AnotisConfig>(Configuration.GetSection("AnotisConfig"));
+            services.AddSingleton(sp => sp.GetRequiredService<IOptions<AnotisConfig>>().Value);
             services.AddSingleton<ShikimoriAttendance>();
             services.AddSingleton<IDatabase, Lite>();
             services.AddSingleton<MangaReceiver>();
             services.AddSingleton<TokenRenewer>();
             services.AddSingleton<UserReceiver>();
-            services.AddHostedService<BackgroundNewUpdatesRefresher>();
-            services.AddHostedService<BackgroundUserUpdatesRefresher>();
+            //services.AddHostedService<BackgroundNewUpdatesRefresher>();
+            //services.AddHostedService<BackgroundUserUpdatesRefresher>();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
