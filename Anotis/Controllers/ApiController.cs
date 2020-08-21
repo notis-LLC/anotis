@@ -25,11 +25,11 @@ namespace Anotis.Controllers
     [ApiController]
     public class ApiController : Controller
     {
-        private readonly AnotisConfig _config;
+        private readonly IConfiguration _config;
         private readonly ILogger<ApiController> _logger;
         private readonly IDatabase _database;
 
-        public ApiController(AnotisConfig config, ILogger<ApiController> logger, IDatabase database)
+        public ApiController(IConfiguration config, ILogger<ApiController> logger, IDatabase database)
         {
             _config = config;
             _logger = logger;
@@ -44,7 +44,7 @@ namespace Anotis.Controllers
             var users = _database.Find(i => i.State == id.TelegramId).ToList();
             var user = users.FirstOrDefault();
             
-            if (users.Count > 1) _logger.LogCritical($"Two entries of {id}");
+            if (users.Count > 1) _logger.LogWarning($"Two entries of {id}");
             if (user is null) return NoContent();
 
             
@@ -54,9 +54,9 @@ namespace Anotis.Controllers
                 .Select(it => $"{it.Russian} из {_database.CountLinks(x => x.Id == it.Id)} источников: {FormUrls(it.Id)}")
                 .ToList();
 
-            for (var i = 0; i < mangas.Count; i++)
+            for (var i = 1; i <= mangas.Count; i++)
             {
-                mangas[i] = mangas[i].Insert(0, $"{i + 1}) ");
+                mangas[i - 1] = mangas[i - 1].Insert(0, $"{i}) ");
             }
             
             return Ok(new Text {text = $"Telegram id: {user.State}\nShikimori id: {user.ShikimoriId}\nShikimori nickname: {user.ShikimoriNickname}\nLast Update: {user.UpdatedAt}\n" + string.Join(Environment.NewLine, mangas)});
@@ -73,7 +73,7 @@ namespace Anotis.Controllers
             var links = _database.FindLinks(link => link.Id == id).FirstOrDefault()?.Links;
             if (links is null)
             {
-                _logger.LogCritical("what, how? (links was null)");
+                _logger.LogCritical("what, how?");
                 throw new Exception("links was null");
             }
 

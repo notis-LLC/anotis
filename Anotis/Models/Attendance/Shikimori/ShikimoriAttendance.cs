@@ -26,7 +26,7 @@ namespace Anotis.Models.Attendance.Shikimori
         {
             return _client.Mangas.GetById(id);
         }
-
+        
         public Task<ExternalLinks[]> GetLinks(TargetType type, long id)
         {
             return type == TargetType.Anime ? _client.Animes.GetExternalLinks(id) : _client.Mangas.GetExternalLinks(id);
@@ -53,7 +53,7 @@ namespace Anotis.Models.Attendance.Shikimori
             });
             return res.Select(it => it.TargetId).ToList();
         }
-
+        
         public Task<List<long>> GetAnimeList(long id)
         {
             return getShit(id, TargetType.Anime);
@@ -64,9 +64,9 @@ namespace Anotis.Models.Attendance.Shikimori
             return getShit(id, TargetType.Manga);
         }
 
-        public Task<UserInfo> GetUserId(AccessToken token)
+        public  Task<UserInfo> GetUserId(AccessToken token)
         {
-            return _client.Users.WhoAmI(token);
+             return _client.Users.WhoAmI(token);
         }
     }
 }

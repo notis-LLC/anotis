@@ -56,7 +56,7 @@ namespace Anotis.Models.BackgroundRefreshing
                 animes.UnionWith(user.Animes);
                 mangas.UnionWith(user.Mangas);
             }
-
+            
             await Task.WhenAll(
                 _database.UpdateMangaInformation(mangas, _attendance.GetMangaInformation),
                 _database.UpdateLinks(animes, TargetType.Anime, _attendance.GetLinks),

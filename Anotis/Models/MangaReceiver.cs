@@ -14,13 +14,13 @@ using Microsoft.Extensions.Logging;
 
 namespace Anotis.Models
 {
-    public class TanserWorker
+    public class MangaReceiver
     {
-        private readonly AnotisConfig _config;
+        private readonly IConfiguration _config;
         private readonly IDatabase _database;
-        private readonly ILogger<TanserWorker> _logger;
+        private readonly ILogger<MangaReceiver> _logger;
 
-        public TanserWorker(AnotisConfig config, IDatabase database, ILogger<TanserWorker> logger)
+        public MangaReceiver(IConfiguration config, IDatabase database, ILogger<MangaReceiver> logger)
         {
             _config = config;
             _database = database;
@@ -34,20 +34,9 @@ namespace Anotis.Models
             _logger.LogInformation("Receiving ended");
         }
 
-        public async Task SendOk(long state)
-        {
-            const string content = "Everything's ok :)";
-            await SendRequest(_config.Services.Tanser.Send,
-                Convert.ToBase64String(
-                    Blake2b.ComputeHash(16, Encoding.UTF8.GetBytes($"{state}-{content}"))
-                    ), 
-                state,
-                content);
-        }
-        
         private async Task ReceiveCluster(IEnumerable<DatabaseUser> collection, MangaUpdatedCluster cluster)
         {
-            var dest = _config.Services.Tanser.Send;
+            var dest = _config["Manser:Send"];
             var users = collection.Where(it => it.Mangas.Contains(cluster.Id)).ToList();
             if (users.Count == 0)
             {
@@ -77,12 +66,12 @@ namespace Anotis.Models
             var text =
                 $"{manga.Date}: {manga.Name}.{Environment.NewLine}{manga.Tome} - {manga.Number}{Environment.NewLine}{manga.Href}";
             
-            return SendRequest(dest, hash, user.State, text);
+            return SendRequest(dest, hash, user, text);
         }
-        private  Task<IFlurlResponse> SendRequest(string dest, string hash, long state, string content)
+        private  Task<IFlurlResponse> SendRequest(string dest, string hash, DatabaseUser user, string content)
         {
-            _logger.LogInformation($"POST: {dest} with {hash} | to {state}. Content {content}");
-            return dest.SendJsonAsync(HttpMethod.Post, new {telegram_user_id = state, text = content, message_hash=hash});
+            _logger.LogInformation($"POST: {dest} with {hash} | to {user.State}. Content {content}");
+            return dest.SendJsonAsync(HttpMethod.Post, new {telegram_user_id = user.State, text = content, message_hash=hash});
         }
     }
 }

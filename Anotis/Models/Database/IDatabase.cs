@@ -26,7 +26,6 @@ namespace Anotis.Models.Database
         int Update(IEnumerable<DatabaseUser> entity);
         int AddExternalLinks(IEnumerable<DatabaseExternalLink> links);
         public Task UpdateMangaInformation(IEnumerable<long> entities, Func<long, Task<MangaID>> updater);
-
         Task UpdateLinks(IEnumerable<long> entities, TargetType type,
             Func<TargetType, long, Task<ExternalLinks[]>> updater);
     }
