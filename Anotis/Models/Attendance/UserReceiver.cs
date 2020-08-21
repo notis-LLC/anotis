@@ -2,7 +2,6 @@
 using System.Threading.Tasks;
 using Anotis.Models.Attendance.Shikimori;
 using Anotis.Models.Database;
-using Microsoft.Extensions.Logging;
 using ShikimoriSharp.Enums;
 
 namespace Anotis.Models.Attendance
@@ -35,7 +34,7 @@ namespace Anotis.Models.Attendance
                 ShikimoriNickname = whoami.Result.Nickname,
                 UpdatedAt = DateTime.UtcNow
             });
-            
+
             await Task.WhenAll(
                 _database.UpdateMangaInformation(manga.Result, _attendance.GetMangaInformation),
                 _database.UpdateLinks(anime.Result, TargetType.Anime, _attendance.GetLinks),

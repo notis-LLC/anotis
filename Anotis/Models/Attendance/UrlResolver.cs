@@ -12,6 +12,8 @@ namespace Anotis.Models.Attendance
         }
 
         public string UrlString(long userId)
-            => string.Format(_config["Shikimori:AuthLinkTemplate"], _config["Shikimori:RedirectUrl"], userId);
+        {
+            return string.Format(_config["Shikimori:AuthLinkTemplate"], _config["Shikimori:RedirectUrl"], userId);
+        }
     }
 }

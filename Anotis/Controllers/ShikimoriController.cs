@@ -1,7 +1,5 @@
 ﻿using System.Threading.Tasks;
 using Anotis.Models.Attendance;
-using Anotis.Models.Attendance.Shikimori;
-using Anotis.Models.Database;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
@@ -12,10 +10,11 @@ namespace Anotis.Controllers
     public class ShikimoriController : Controller
     {
         private readonly IConfiguration _configuration;
-        private readonly UserReceiver _receiver;
         private readonly ILogger<ShikimoriController> _logger;
+        private readonly UserReceiver _receiver;
 
-        public ShikimoriController(UserReceiver receiver, ILogger<ShikimoriController> logger, IConfiguration configuration)
+        public ShikimoriController(UserReceiver receiver, ILogger<ShikimoriController> logger,
+            IConfiguration configuration)
         {
             _receiver = receiver;
             _logger = logger;
