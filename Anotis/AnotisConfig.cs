@@ -26,7 +26,13 @@
         public class AnserServices
         {
             public string Manser { get; set; }
-            public string Tanser { get; set; }
+            public Tanser Tanser { get; set; }
+        }
+
+        public class Tanser
+        {
+            public string Send { get; set; }
+            public string Link { get; set; }
         }
     }
 }

@@ -51,7 +51,7 @@ namespace Anotis
             );
             services.AddSingleton<ShikimoriAttendance>();
             services.AddSingleton<IDatabase, Lite>();
-            services.AddSingleton<MangaReceiver>();
+            services.AddSingleton<TanserWorker>();
             services.AddSingleton<TokenRenewer>();
             services.AddSingleton<UserReceiver>();
             services.AddHostedService<BackgroundNewUpdatesRefresher>();

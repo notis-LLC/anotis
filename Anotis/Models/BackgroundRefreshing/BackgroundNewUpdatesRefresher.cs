@@ -16,9 +16,9 @@ namespace Anotis.Models.BackgroundRefreshing
         private readonly AnotisConfig _config;
         private readonly IDatabase _database;
         private readonly ILogger<BackgroundNewUpdatesRefresher> _logger;
-        private readonly MangaReceiver _receiver;
+        private readonly TanserWorker _receiver;
 
-        public BackgroundNewUpdatesRefresher(MangaReceiver receiver, AnotisConfig config, IDatabase database,
+        public BackgroundNewUpdatesRefresher(TanserWorker receiver, AnotisConfig config, IDatabase database,
             ILogger<BackgroundNewUpdatesRefresher> logger) : base(logger, TimeSpan.FromMinutes(5))
         {
             _receiver = receiver;
