@@ -29,8 +29,11 @@ namespace Anotis.Models
 
         public async Task ReceiveClusters(IEnumerable<IEnumerable<MangaUpdatedCluster>> clusters)
         {
+            if(clusters is null) return;
+            var clust = clusters.ToList();
+            if(!clust.Any()) return;
             var db = _database.GetAllUsers().ToList();
-            await Task.WhenAll(clusters.AsParallel().SelectMany(it => it).Select(x => ReceiveCluster(db, x)));
+            await Task.WhenAll(clust.AsParallel().SelectMany(it => it).Select(x => ReceiveCluster(db, x)));
             _logger.LogInformation("Receiving ended");
         }
 
@@ -47,18 +50,22 @@ namespace Anotis.Models
         
         private async Task ReceiveCluster(IEnumerable<DatabaseUser> collection, MangaUpdatedCluster cluster)
         {
-            var dest = _config.Services.Tanser.Send;
             var users = collection.Where(it => it.Mangas.Contains(cluster.Id)).ToList();
             if (users.Count == 0)
             {
                 _logger.LogCritical($"Users not found for {cluster.Id}");
                 return;
             }
-
-            var res = await Task.WhenAll(cluster.Mangas
-                .AsParallel()
-                .Select(x => Task.WhenAll(
-                    users.AsParallel().Select(it => FormRequest(dest, cluster.Id, x, it)))
+            
+            
+            
+            var res = await Task.WhenAll(
+                cluster.Mangas.AsParallel()
+                .Select(x => 
+                    Task.WhenAll(
+                    users.AsParallel()
+                        .Select(it => FormRequest(_config.Services.Tanser.Send, cluster.Id, x, it))
+                    )
                 )
             );
 

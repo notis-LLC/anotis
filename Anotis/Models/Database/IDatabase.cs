@@ -21,6 +21,7 @@ namespace Anotis.Models.Database
         int CountLinks(Expression<Func<DatabaseExternalLink, bool>> predicate);
         bool Update(DatabaseUser entity);
         bool Delete(DatabaseUser entity);
+        bool DeleteManga(long id);
         bool Update(DatabaseExternalLink entity);
         int Update(IEnumerable<DatabaseExternalLink> entity);
         int Update(IEnumerable<DatabaseUser> entity);

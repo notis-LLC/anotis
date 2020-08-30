@@ -70,7 +70,7 @@ namespace Anotis
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env, ILoggerFactory loggerFactory)
         {
-            loggerFactory.AddFile("logs/log.txt");
+            loggerFactory.AddFile("/out/log.txt");
 
             app.UseSwagger();
             app.UseSwaggerUI(c => { c.SwaggerEndpoint("/swagger/v1/swagger.json", "Anotis api"); });

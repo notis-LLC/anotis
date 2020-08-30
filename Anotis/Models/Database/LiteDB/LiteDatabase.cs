@@ -88,6 +88,12 @@ namespace Anotis.Models.Database.LiteDB
             return col.Delete(entity.ObjectId);
         }
 
+        public bool DeleteManga(long id)
+        {
+            var col = _db.GetCollection<DatabaseExternalLink>("external_links");
+            return col.Delete(id);
+        }
+
         public bool Update(DatabaseExternalLink links)
         {
             var col = _db.GetCollection<DatabaseExternalLink>("external_links");
