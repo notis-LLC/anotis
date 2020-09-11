@@ -7,7 +7,7 @@
         public LiteDbConfig LiteDb { get; set; }
 
         public AnserServices Services { get; set; }
-        
+
 
         public class ShikimoriConfig
         {

@@ -29,11 +29,17 @@ namespace Anotis.Models
 
         public async Task ReceiveClusters(IEnumerable<IEnumerable<MangaUpdatedCluster>> clusters)
         {
-            if(clusters is null) return;
             var clust = clusters.ToList();
-            if(!clust.Any()) return;
             var db = _database.GetAllUsers().ToList();
-            await Task.WhenAll(clust.AsParallel().SelectMany(it => it).Select(x => ReceiveCluster(db, x)));
+            try
+            {
+                await Task.WhenAll(clust.AsParallel().SelectMany(it => it).Select(x => ReceiveCluster(db, x)));
+            }
+            catch (Exception e)
+            {
+                _logger.LogCritical($"{DateTime.UtcNow} ну кто-то останется без манги сегодня ;D {e.Message} {e.Data}\n{e.StackTrace}");
+                return;
+            }
             _logger.LogInformation("Receiving ended");
         }
 
@@ -56,19 +62,18 @@ namespace Anotis.Models
                 _logger.LogCritical($"Users not found for {cluster.Id}");
                 return;
             }
-            
-            
-            
-            var res = await Task.WhenAll(
-                cluster.Mangas.AsParallel()
-                .Select(x => 
-                    Task.WhenAll(
-                    users.AsParallel()
-                        .Select(it => FormRequest(_config.Services.Tanser.Send, cluster.Id, x, it))
-                    )
-                )
-            );
 
+
+            var res = await Task.WhenAll(
+                cluster.Mangas
+                    .Select(x => 
+                        Task.WhenAll(
+                            users.AsParallel()
+                                .Select(it => FormRequest(_config.Services.Tanser.Send, cluster.Id, x, it))
+                        )
+                    )
+            );
+            
             var codes = res.SelectMany(it => it)
                 .Where(it => it.StatusCode != 200)
                 .Select(it => it.ResponseMessage);
@@ -78,12 +83,11 @@ namespace Anotis.Models
             }
         }
 
-        private  Task<IFlurlResponse> FormRequest(string dest, long id, UpdatedManga manga, DatabaseUser user)
+        private Task<IFlurlResponse> FormRequest(string dest, long id, UpdatedManga manga, DatabaseUser user)
         {
             var hash = Convert.ToBase64String(Blake2b.ComputeHash(16, Encoding.UTF8.GetBytes($"{id}-{manga.Tome}-{manga.Number}")));
             var text =
                 $"{manga.Date}: {manga.Name}.{Environment.NewLine}{manga.Tome} - {manga.Number}{Environment.NewLine}{manga.Href}";
-            
             return SendRequest(dest, hash, user.State, text);
         }
         private  Task<IFlurlResponse> SendRequest(string dest, string hash, long state, string content)
