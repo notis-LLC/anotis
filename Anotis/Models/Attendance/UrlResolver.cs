@@ -1,6 +1,4 @@
-﻿using Microsoft.Extensions.Configuration;
-
-namespace Anotis.Models.Attendance
+﻿namespace Anotis.Models.Attendance
 {
     public class UrlResolver
     {

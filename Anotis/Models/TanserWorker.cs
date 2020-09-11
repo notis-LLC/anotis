@@ -68,7 +68,7 @@ namespace Anotis.Models
                 cluster.Mangas
                     .Select(x => 
                         Task.WhenAll(
-                            users
+                            users.AsParallel()
                                 .Select(it => FormRequest(_config.Services.Tanser.Send, cluster.Id, x, it))
                         )
                     )

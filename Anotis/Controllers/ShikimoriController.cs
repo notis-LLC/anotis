@@ -2,7 +2,6 @@
 using Anotis.Models;
 using Anotis.Models.Attendance;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 
 namespace Anotis.Controllers
@@ -12,8 +11,8 @@ namespace Anotis.Controllers
     {
         private readonly AnotisConfig _configuration;
         private readonly ILogger<ShikimoriController> _logger;
-        private readonly TanserWorker _worker;
         private readonly UserReceiver _receiver;
+        private readonly TanserWorker _worker;
 
         public ShikimoriController(TanserWorker worker, UserReceiver receiver, ILogger<ShikimoriController> logger,
             AnotisConfig configuration)
