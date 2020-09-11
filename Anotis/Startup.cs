@@ -45,9 +45,9 @@ namespace Anotis
             });
             services.Configure<AnotisConfig>(Configuration.GetSection("AnotisConfig"));
             services.AddSingleton(sp => sp.GetRequiredService<IOptions<AnotisConfig>>().Value);
-            services.AddSingleton(it => 
+            services.AddSingleton(it =>
                 new ShikimoriClient((ILogger) it.GetService(typeof(ILogger<Startup>)),
-                GetSettings(it.GetRequiredService<AnotisConfig>()))
+                    GetSettings(it.GetRequiredService<AnotisConfig>()))
             );
             services.AddSingleton<ShikimoriAttendance>();
             services.AddSingleton<IDatabase, Lite>();
@@ -60,11 +60,11 @@ namespace Anotis
 
         private static ClientSettings GetSettings(AnotisConfig config)
         {
-            return new ClientSettings(config.Shikimori.ClientName, 
+            return new ClientSettings(config.Shikimori.ClientName,
                 config.Shikimori.ClientId,
-                config.Shikimori.ClientSecret, 
+                config.Shikimori.ClientSecret,
                 config.Shikimori.RedirectUrl
-                );
+            );
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -75,10 +75,7 @@ namespace Anotis
             app.UseSwagger();
             app.UseSwaggerUI(c => { c.SwaggerEndpoint("/swagger/v1/swagger.json", "Anotis api"); });
 
-            if (env.IsDevelopment())
-            {
-                app.UseDeveloperExceptionPage();
-            }
+            if (env.IsDevelopment()) app.UseDeveloperExceptionPage();
 
             app.UseHttpsRedirection();
 

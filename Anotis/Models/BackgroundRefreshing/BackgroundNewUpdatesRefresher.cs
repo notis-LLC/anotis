@@ -5,7 +5,6 @@ using System.Threading.Tasks;
 using Anotis.Models.Database;
 using Flurl;
 using Flurl.Http;
-using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using ShikimoriSharp.Enums;
 
