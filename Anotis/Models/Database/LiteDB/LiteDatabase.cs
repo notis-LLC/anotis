@@ -4,7 +4,6 @@ using System.Linq;
 using System.Linq.Expressions;
 using System.Threading.Tasks;
 using LiteDB;
-using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using ShikimoriSharp.AdditionalRequests;
 using ShikimoriSharp.Bases;
