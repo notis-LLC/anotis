@@ -51,7 +51,7 @@ namespace Anotis.Models
                     Blake2b.ComputeHash(16, Encoding.UTF8.GetBytes($"{state}-{content}"))
                 ),
                 state,
-                content);
+                content, null);
         }
 
         private async Task ReceiveCluster(IEnumerable<DatabaseUser> collection, MangaUpdatedCluster cluster)
@@ -86,14 +86,14 @@ namespace Anotis.Models
                 Encoding.UTF8.GetBytes($"{id}-{manga.Tome}-{manga.Number}")));
             var text =
                 $"{manga.Date}: {manga.Name}.{Environment.NewLine}{manga.Tome} - {manga.Number}{Environment.NewLine}{manga.Href}";
-            return SendRequest(dest, hash, user.State, text);
+            return SendRequest(dest, hash, user.State, text, manga.Href.ToString());
         }
 
-        private Task<IFlurlResponse> SendRequest(string dest, string hash, long state, string content)
+        private Task<IFlurlResponse> SendRequest(string dest, string hash, long state, string content, string mangaUrl)
         {
             _logger.LogInformation($"POST: {dest} with {hash} | to {state}. Content {content}");
             return dest.SendJsonAsync(HttpMethod.Post,
-                new {telegram_user_id = state, text = content, message_hash = hash});
+                new {telegram_user_id = state, text = content, message_hash = hash, mangaUrl=mangaUrl});
         }
     }
 }
